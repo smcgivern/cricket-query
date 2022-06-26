@@ -1,0 +1,32 @@
+#!/bin/bash
+
+target="data/innings.sqlite3"
+
+if [ -f "${target}" ]; then
+    mv "${target}" "${target}.$(date +'%Y-%m-%dT%H-%M-%S')"
+fi
+
+read -r -d '' commands <<COMMANDS
+.import --csv data/men_test_batting.csv men_test_batting_innings
+.import --csv data/men_test_bowling.csv men_test_bowling_innings
+.import --csv data/men_test_team.csv men_test_team_innings
+.import --csv data/women_test_batting.csv women_test_batting_innings
+.import --csv data/women_test_bowling.csv women_test_bowling_innings
+.import --csv data/women_test_team.csv women_test_team_innings
+
+.import --csv data/men_odi_batting.csv men_odi_batting_innings
+.import --csv data/men_odi_bowling.csv men_odi_bowling_innings
+.import --csv data/men_odi_team.csv men_odi_team_innings
+.import --csv data/women_odi_batting.csv women_odi_batting_innings
+.import --csv data/women_odi_bowling.csv women_odi_bowling_innings
+.import --csv data/women_odi_team.csv women_odi_team_innings
+
+.import --csv data/men_t20i_batting.csv men_t20i_batting_innings
+.import --csv data/men_t20i_bowling.csv men_t20i_bowling_innings
+.import --csv data/men_t20i_team.csv men_t20i_team_innings
+.import --csv data/women_t20i_batting.csv women_t20i_batting_innings
+.import --csv data/women_t20i_bowling.csv women_t20i_bowling_innings
+.import --csv data/women_t20i_team.csv women_t20i_team_innings
+COMMANDS
+
+echo "${commands}" | sqlite3 "${target}"
