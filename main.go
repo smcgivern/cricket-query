@@ -68,6 +68,12 @@ func table(w http.ResponseWriter, r *http.Request) {
 	template.Execute(w, runQuery(query, 9))
 }
 
+func schema(w http.ResponseWriter, r *http.Request) {
+	template := template.Must(template.New("table.html").ParseFiles("template/table.html"))
+
+	template.Execute(w, runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100))
+}
+
 func logRequests(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
@@ -85,6 +91,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", table)
+	http.HandleFunc("/schema", schema)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), logRequests(http.DefaultServeMux)))
 }
