@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"html/template"
@@ -10,7 +11,12 @@ import (
 	"os"
 )
 
-var db *sqlx.DB
+var (
+	db *sqlx.DB
+	//go:embed template
+	templatesFS embed.FS
+	templates   *template.Template
+)
 
 type Result struct {
 	Columns  []string
@@ -58,20 +64,17 @@ func runQuery(query string, limit int) Result {
 func table(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	template := template.Must(template.New("table.html").ParseFiles("template/table.html"))
 	query := r.FormValue("query")
 
 	if query == "" {
 		query = "SELECT * FROM men_test_batting_innings LIMIT 10;"
 	}
 
-	template.Execute(w, runQuery(query, 9))
+	templates.ExecuteTemplate(w, "table.html", runQuery(query, 9))
 }
 
 func schema(w http.ResponseWriter, r *http.Request) {
-	template := template.Must(template.New("table.html").ParseFiles("template/table.html"))
-
-	template.Execute(w, runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100))
+	templates.ExecuteTemplate(w, "table.html", runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100))
 }
 
 func logRequests(handler http.Handler) http.Handler {
@@ -81,9 +84,13 @@ func logRequests(handler http.Handler) http.Handler {
 	})
 }
 
-func main() {
+func init() {
 	db = sqlx.MustConnect("sqlite", "data/innings.sqlite3")
 
+	templates = template.Must(template.ParseFS(templatesFS, "template/*"))
+}
+
+func main() {
 	port, exists := os.LookupEnv("PORT")
 
 	if !exists {
