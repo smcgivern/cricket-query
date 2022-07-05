@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"html/template"
-	"net/http"
-	"os"
 	"log"
 	_ "modernc.org/sqlite"
+	"net/http"
+	"os"
 )
 
 var db *sqlx.DB
 
 type Result struct {
-	Columns []string
-	Rows [][]interface{}
+	Columns  []string
+	Rows     [][]interface{}
 	Messages []string
 }
 
@@ -25,7 +25,7 @@ func runQuery(query string, limit int) Result {
 
 	results, err := db.Queryx(query)
 	if err != nil {
-		return Result{ Messages: []string{err.Error()} }
+		return Result{Messages: []string{err.Error()}}
 	}
 
 	columns, err := results.Columns()
@@ -35,7 +35,7 @@ func runQuery(query string, limit int) Result {
 
 	for results.Next() {
 		if i > limit {
-			messages = append(messages, fmt.Sprintf("more rows than limit (%d)", limit))
+			messages = append(messages, fmt.Sprintf("Too many rows returned; stopping at %d", limit))
 			break
 		}
 
@@ -48,17 +48,24 @@ func runQuery(query string, limit int) Result {
 		i += 1
 	}
 
-	return Result {
-		Columns: columns,
-			Rows: rows,
-			Messages: messages,
+	return Result{
+		Columns:  columns,
+		Rows:     rows,
+		Messages: messages,
 	}
 }
 
 func table(w http.ResponseWriter, r *http.Request) {
-	template := template.Must(template.New("table.html").ParseFiles("template/table.html"))
+	r.ParseForm()
 
-	template.Execute(w, runQuery("SELECT * FROM men_test_batting_innings LIMIT 10;", 9))
+	template := template.Must(template.New("table.html").ParseFiles("template/table.html"))
+	query := r.FormValue("query")
+
+	if query == "" {
+		query = "SELECT * FROM men_test_batting_innings LIMIT 10;"
+	}
+
+	template.Execute(w, runQuery(query, 9))
 }
 
 func logRequests(handler http.Handler) http.Handler {
