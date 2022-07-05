@@ -1,2 +1,2 @@
-data/innings.sqlite3: data/*.csv
+data/innings.sqlite3: data/*.csv scripts/create-db
 	scripts/create-db

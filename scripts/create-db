@@ -30,3 +30,4 @@ read -r -d '' commands <<COMMANDS
 COMMANDS
 
 echo "${commands}" | sqlite3 "${target}"
+chmod -w "${target}"
