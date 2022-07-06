@@ -6,28 +6,111 @@ if [ -f "${target}" ]; then
     mv "${target}" "${target}.$(date +'%Y-%m-%dT%H-%M-%S')"
 fi
 
-read -r -d '' commands <<COMMANDS
-.import --csv data/men_test_batting.csv men_test_batting_innings
-.import --csv data/men_test_bowling.csv men_test_bowling_innings
-.import --csv data/men_test_team.csv men_test_team_innings
-.import --csv data/women_test_batting.csv women_test_batting_innings
-.import --csv data/women_test_bowling.csv women_test_bowling_innings
-.import --csv data/women_test_team.csv women_test_team_innings
+batting_table() {
+    read -r -d '' commands <<COMMANDS
+${commands}
 
-.import --csv data/men_odi_batting.csv men_odi_batting_innings
-.import --csv data/men_odi_bowling.csv men_odi_bowling_innings
-.import --csv data/men_odi_team.csv men_odi_team_innings
-.import --csv data/women_odi_batting.csv women_odi_batting_innings
-.import --csv data/women_odi_bowling.csv women_odi_bowling_innings
-.import --csv data/women_odi_team.csv women_odi_team_innings
+CREATE TABLE ${1}_batting_innings (
+  i integer,
+  player text,
+  team text,
+  runs integer,
+  runs_txt text,
+  not_out boolean,
+  mins numeric,
+  bf numeric,
+  fours numeric,
+  sixes numeric,
+  sr numeric,
+  pos integer,
+  innings integer,
+  opposition text,
+  ground text,
+  start_date date
+);
 
-.import --csv data/men_t20i_batting.csv men_t20i_batting_innings
-.import --csv data/men_t20i_bowling.csv men_t20i_bowling_innings
-.import --csv data/men_t20i_team.csv men_t20i_team_innings
-.import --csv data/women_t20i_batting.csv women_t20i_batting_innings
-.import --csv data/women_t20i_bowling.csv women_t20i_bowling_innings
-.import --csv data/women_t20i_team.csv women_t20i_team_innings
+.import --skip 1 --csv data/${1}_batting.csv ${1}_batting_innings
+
+UPDATE ${1}_batting_innings
+SET
+  runs = CASE WHEN runs = "" THEN NULL ELSE runs END,
+  mins = CASE WHEN mins = "" THEN NULL ELSE mins END,
+  bf = CASE WHEN bf = "" THEN NULL ELSE bf END,
+  fours = CASE WHEN fours = "" THEN NULL ELSE fours END,
+  sixes = CASE WHEN sixes = "" THEN NULL ELSE sixes END;
 COMMANDS
+}
+
+bowling_table() {
+    read -r -d '' commands <<COMMANDS
+${commands}
+
+CREATE TABLE ${1}_bowling_innings (
+  i integer,
+  player text,
+  team text,
+  overs text,
+  maidens numeric,
+  runs numeric,
+  wickets numeric,
+  bpo integer,
+  balls numeric,
+  economy numeric,
+  pos integer,
+  innings integer,
+  opposition text,
+  ground text,
+  start_date date
+);
+
+.import --skip 1 --csv data/${1}_bowling.csv ${1}_bowling_innings
+
+UPDATE ${1}_bowling_innings
+SET
+  maidens = CASE WHEN maidens = "" THEN NULL ELSE maidens END,
+  runs = CASE WHEN runs = "" THEN NULL ELSE runs END,
+  wickets = CASE WHEN wickets = "" THEN NULL ELSE wickets END,
+  balls = CASE WHEN balls = "" THEN NULL ELSE balls END;
+COMMANDS
+}
+
+team_table() {
+    read -r -d '' commands <<COMMANDS
+${commands}
+
+CREATE TABLE ${1}_team_innings (
+  i integer,
+  team text,
+  score text,
+  runs integer,
+  overs numeric,
+  bpo integer,
+  rpo numeric,
+  lead integer,
+  all_out boolean,
+  declared boolean,
+  result text,
+  innings integer,
+  opposition text,
+  ground text,
+  start_date date
+);
+
+.import --skip 1 --csv data/${1}_team.csv ${1}_team_innings
+
+UPDATE ${1}_team_innings
+SET
+  runs = CASE WHEN runs = "" THEN NULL ELSE runs END,
+  overs = CASE WHEN overs = "" THEN NULL ELSE overs END,
+  lead = CASE WHEN lead = "" THEN NULL ELSE lead END;
+COMMANDS
+}
+
+for format in "women_test" "women_odi" "women_t20i" "men_test" "men_odi" "men_t20i"; do
+    batting_table "${format}"
+    bowling_table "${format}"
+    team_table "${format}"
+done
 
 echo "${commands}" | sqlite3 "${target}"
 chmod -w "${target}"
