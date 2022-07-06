@@ -1,6 +1,18 @@
 .PHONY: release
 release: release/data/innings.sqlite3 release/cricket-query
 
+.PHONY: run
+run: fmt
+	@go run .
+
+.PHONY: fmt
+fmt:
+	@go fmt
+
+.PHONY: test
+test: fmt
+	@go test .
+
 data/innings.sqlite3: data/*.csv scripts/create-db
 	scripts/create-db
 
