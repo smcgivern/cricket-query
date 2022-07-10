@@ -1,2 +1,4 @@
 data
 release
+*.mk
+*.service
