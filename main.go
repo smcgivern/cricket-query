@@ -20,13 +20,13 @@ var (
 
 type Result struct {
 	Columns  []string
-	Rows     [][]interface{}
+	Rows     [][]any
 	Messages []string
 }
 
 func runQuery(query string, limit int) Result {
 	messages := make([]string, 0)
-	rows := make([][]interface{}, 0)
+	rows := make([][]any, 0)
 	i := 1
 
 	results, err := db.Queryx(query)
