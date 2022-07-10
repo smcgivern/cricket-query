@@ -75,7 +75,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	executeTemplate(w, "index.html", Page{
-		Title: "Results",
+		Title: "Cricket query",
 		Content: struct {
 			Query   string
 			Results Result
@@ -88,7 +88,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func schema(w http.ResponseWriter, r *http.Request) {
 	executeTemplate(w, "schema.html", Page{
-		Title:   "Schema",
+		Title:   "Cricket query schema",
 		Content: runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100),
 	})
 }
