@@ -5,6 +5,11 @@ test: fmt
 .PHONY: release
 release: release/data/innings.sqlite3 release/cricket-query
 
+.PHONY: clean
+clean:
+	rm -f release/data/innings.sqlite3
+	rm release/cricket-query
+
 .PHONY: run
 run: fmt
 	@go run .
