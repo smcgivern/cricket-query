@@ -13,15 +13,19 @@ import (
 
 var (
 	db *sqlx.DB
-	//go:embed template
+	//go:embed all:template
 	templatesFS embed.FS
-	templates   *template.Template
 )
 
 type Result struct {
 	Columns  []string
 	Rows     [][]any
 	Messages []string
+}
+
+type Page struct {
+	Title   string
+	Content any
 }
 
 func runQuery(query string, limit int) Result {
@@ -70,11 +74,23 @@ func table(w http.ResponseWriter, r *http.Request) {
 		query = "SELECT * FROM men_test_batting_innings LIMIT 10;"
 	}
 
-	templates.ExecuteTemplate(w, "table.html", runQuery(query, 9))
+	executeTemplate(w, "results.html", Page{
+		Title:   "Results",
+		Content: runQuery(query, 9),
+	})
 }
 
 func schema(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "table.html", runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100))
+	executeTemplate(w, "schema.html", Page{
+		Title:   "Schema",
+		Content: runQuery("SELECT name, sql FROM sqlite_schema WHERE type = 'table';", 100),
+	})
+}
+
+func executeTemplate(w http.ResponseWriter, path string, page Page) {
+	template.
+		Must(template.ParseFS(templatesFS, "template/_*.html", "template/"+path)).
+		ExecuteTemplate(w, path, page)
 }
 
 func logRequests(handler http.Handler) http.Handler {
@@ -86,8 +102,6 @@ func logRequests(handler http.Handler) http.Handler {
 
 func init() {
 	db = sqlx.MustConnect("sqlite", "data/innings.sqlite3")
-
-	templates = template.Must(template.ParseFS(templatesFS, "template/*"))
 }
 
 func main() {
