@@ -22,3 +22,5 @@ release/data/innings.sqlite3: data/innings.sqlite3
 
 release/cricket-query: main.go
 	go build -o release/cricket-query
+
+-include *.mk
