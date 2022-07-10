@@ -65,7 +65,7 @@ func runQuery(query string, limit int) Result {
 	}
 }
 
-func table(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	query := r.FormValue("query")
@@ -74,9 +74,15 @@ func table(w http.ResponseWriter, r *http.Request) {
 		query = "SELECT * FROM men_test_batting_innings LIMIT 10;"
 	}
 
-	executeTemplate(w, "results.html", Page{
-		Title:   "Results",
-		Content: runQuery(query, 9),
+	executeTemplate(w, "index.html", Page{
+		Title: "Results",
+		Content: struct {
+			Query   string
+			Results Result
+		}{
+			Query:   query,
+			Results: runQuery(query, 9),
+		},
 	})
 }
 
@@ -111,7 +117,7 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", table)
+	http.HandleFunc("/", index)
 	http.HandleFunc("/schema", schema)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), logRequests(http.DefaultServeMux)))

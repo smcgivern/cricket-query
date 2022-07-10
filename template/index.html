@@ -1,0 +1,9 @@
+{{ template "_layout.html" . }}
+{{ define "content" }}
+<form action="." method="GET">
+  <p><textarea name="query">{{ .Content.Query }}</textarea></p>
+  <p><input type="submit"></p>
+</form>
+
+{{ template "_table.html" .Content.Results }}
+{{ end }}
