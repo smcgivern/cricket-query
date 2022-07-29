@@ -19,7 +19,8 @@ fmt:
 	@go fmt
 
 data/innings.sqlite3: data/*.csv scripts/create-db
-	scripts/create-db
+	scripts/create-db data
+	chmod -w data/innings.sqlite3
 
 release/data/innings.sqlite3: data/innings.sqlite3
 	mkdir -p release/data

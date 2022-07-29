@@ -1,9 +1,18 @@
 #!/bin/bash
 
-target="data/innings.sqlite3"
+# First arg is the target directory, containing the CSV files to load.
+#
+# Set `backup` to any string to back up the previous file first.
+
+target_dir="${1:-data}"
+target="${target_dir}/innings.sqlite3"
 
 if [ -f "${target}" ]; then
-    mv "${target}" "${target}.$(date +'%Y-%m-%dT%H-%M-%S')"
+    if [ "${backup}" ]; then
+        mv "${target}" "${target}.$(date +'%Y-%m-%dT%H-%M-%S')"
+    else
+        rm "${target}"
+    fi
 fi
 
 batting_table() {
@@ -29,7 +38,7 @@ CREATE TABLE ${1}_batting_innings (
   start_date date
 );
 
-.import --skip 1 --csv data/${1}_batting.csv ${1}_batting_innings
+.import --skip 1 --csv ${target_dir}/${1}_batting.csv ${1}_batting_innings
 
 UPDATE ${1}_batting_innings
 SET
@@ -63,7 +72,7 @@ CREATE TABLE ${1}_bowling_innings (
   start_date date
 );
 
-.import --skip 1 --csv data/${1}_bowling.csv ${1}_bowling_innings
+.import --skip 1 --csv ${target_dir}/${1}_bowling.csv ${1}_bowling_innings
 
 UPDATE ${1}_bowling_innings
 SET
@@ -96,7 +105,7 @@ CREATE TABLE ${1}_team_innings (
   start_date date
 );
 
-.import --skip 1 --csv data/${1}_team.csv ${1}_team_innings
+.import --skip 1 --csv ${target_dir}/${1}_team.csv ${1}_team_innings
 
 UPDATE ${1}_team_innings
 SET
@@ -113,4 +122,3 @@ for format in "women_test" "women_odi" "women_t20i" "men_test" "men_odi" "men_t2
 done
 
 echo "${commands}" | sqlite3 "${target}"
-chmod -w "${target}"
