@@ -122,3 +122,4 @@ for format in "women_test" "women_odi" "women_t20i" "men_test" "men_odi" "men_t2
 done
 
 echo "${commands}" | sqlite3 "${target}"
+chmod -w "${target}"

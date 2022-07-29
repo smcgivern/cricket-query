@@ -106,11 +106,8 @@ func logRequests(handler http.Handler) http.Handler {
 	})
 }
 
-func init() {
-	db = sqlx.MustConnect("sqlite", "data/innings.sqlite3")
-}
-
 func main() {
+	db = sqlx.MustConnect("sqlite", "data/innings.sqlite3")
 	port, exists := os.LookupEnv("PORT")
 
 	if !exists {

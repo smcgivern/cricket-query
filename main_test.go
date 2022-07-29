@@ -2,8 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	db = sqlx.MustConnect("sqlite", "testdata/innings.sqlite3")
+	m.Run()
+}
 
 func TestRunQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)

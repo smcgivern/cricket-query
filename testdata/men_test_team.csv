@@ -1,0 +1,6 @@
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
+0,Australia,245,245,169.3,4,2.16,245,True,False,won,1,England,Melbourne,15 Mar 1877
+1,England,196,196,136.1,4,2.15,-49,True,False,lost,2,Australia,Melbourne,15 Mar 1877
+2,Australia,104,104,68.0,4,2.29,153,True,False,won,3,England,Melbourne,15 Mar 1877
+3,England,108,108,66.1,4,2.44,-45,True,False,lost,4,Australia,Melbourne,15 Mar 1877
+4,Australia,122,122,112.1,4,1.63,122,True,False,lost,1,England,Melbourne,31 Mar 1877
