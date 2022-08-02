@@ -19,7 +19,7 @@
       {{ range .Rows }}
       <tr>
         {{ range . }}
-        <td>{{ . }}</td>
+        <td>{{ format . }}</td>
         {{ end }}
       </tr>
       {{ end }}

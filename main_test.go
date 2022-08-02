@@ -11,6 +11,31 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestFormat(t *testing.T) {
+	cases := []struct {
+		input    any
+		expected string
+	}{
+		{"C Bannerman", "C Bannerman"},
+		{"6996", "6,996"},
+		{"6996.01", "6,996.01"},
+		{"6996.015", "6,996.02"},
+		{"99.9400000", "99.94"},
+		{"1877-03-15 00:00:00 +0000 UTC", "15 March 1877"},
+		{"1877-03-15", "15 March 1877"},
+		{"1 string with 2 numbers", "1 string with 2 numbers"},
+		{nil, ""},
+		{6996, "6,996"},
+		{6996.015, "6,996.02"},
+	}
+
+	for _, c := range cases {
+		if format(c.input) != c.expected {
+			t.Errorf("format(%q) == %v, want %v", c.input, format(c.input), c.expected)
+		}
+	}
+}
+
 func TestRunQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
@@ -44,6 +69,7 @@ func TestRunQuery(t *testing.T) {
 			Result{Messages: []string{"attempt to write a readonly database (8)"}},
 		},
 	}
+
 	for _, c := range cases {
 		result := runQuery(c.query, c.limit)
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
