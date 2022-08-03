@@ -34,7 +34,7 @@
   textarea.style.display = 'none';
 
   editor.className = 'editor-loaded';
-  editor.setValue(textarea.value);
+  editor.setValue(textarea.value, -1);
   editor.session.on('change', function() {
     textarea.value = editor.getSession().getValue();
   });
