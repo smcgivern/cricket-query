@@ -30,6 +30,7 @@ type Result struct {
 
 type LabelledResult struct {
 	Header string
+	Id     string
 	Result Result
 }
 
@@ -111,6 +112,7 @@ func projectQuery(formats []Checkbox, genders []Checkbox, query string, limit in
 			if format.Checked && gender.Checked {
 				out = append(out, LabelledResult{
 					fmt.Sprintf("%s's %s", gender.Label, format.Label),
+					fmt.Sprintf("%s-%s", gender.Value, format.Value),
 					runQuery(addAliases(gender.Value, format.Value, query), limit),
 				})
 			}

@@ -58,6 +58,7 @@ func TestProjectQuery(t *testing.T) {
 			[]LabelledResult{
 				LabelledResult{
 					Header: "Men's ODI",
+					Id:     "men-odi",
 					Result: Result{
 						Columns:  []string{"runs"},
 						Rows:     rows,
@@ -66,6 +67,7 @@ func TestProjectQuery(t *testing.T) {
 				},
 				LabelledResult{
 					Header: "Men's T20I",
+					Id:     "men-t20i",
 					Result: Result{
 						Columns:  []string{"runs"},
 						Rows:     rows,
@@ -82,6 +84,7 @@ func TestProjectQuery(t *testing.T) {
 			[]LabelledResult{
 				LabelledResult{
 					Header: "Women's Test",
+					Id:     "women-test",
 					Result: Result{
 						Columns:  []string{"runs"},
 						Rows:     rows,

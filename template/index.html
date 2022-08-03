@@ -21,7 +21,7 @@
 </form>
 
 {{ range .Content.LabelledResults }}
-<h2>{{ .Header }}</h2>
+<h2 id="{{ .Id }}">{{ .Header }} <a href="#{{ .Id }}">¶</a></h2>
 {{ template "_table.html" .Result }}
 {{ end }}
 
