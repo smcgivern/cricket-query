@@ -36,6 +36,70 @@ func TestFormat(t *testing.T) {
 	}
 }
 
+func TestProjectQuery(t *testing.T) {
+	rows := make([][]interface{}, 1)
+	rows[0] = make([]interface{}, 1)
+	rows[0][0] = "25"
+
+	cases := []struct {
+		formats  []Checkbox
+		genders  []Checkbox
+		query    string
+		limit    int
+		expected []LabelledResult
+	}{
+		{
+			checkboxValues(formatValues, []string{"odi", "t20i"}),
+			checkboxValues(genderValues, []string{"men"}),
+			// Using full table names means that the projected
+			// tables don't apply.
+			"SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			1,
+			[]LabelledResult{
+				LabelledResult{
+					Header: "Men's ODI",
+					Result: Result{
+						Columns:  []string{"runs"},
+						Rows:     rows,
+						Messages: []string{},
+					},
+				},
+				LabelledResult{
+					Header: "Men's T20I",
+					Result: Result{
+						Columns:  []string{"runs"},
+						Rows:     rows,
+						Messages: []string{},
+					},
+				},
+			},
+		},
+		{
+			checkboxValues(formatValues, []string{"test"}),
+			checkboxValues(genderValues, []string{"women"}),
+			"SELECT runs FROM innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			1,
+			[]LabelledResult{
+				LabelledResult{
+					Header: "Women's Test",
+					Result: Result{
+						Columns:  []string{"runs"},
+						Rows:     rows,
+						Messages: []string{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		result := projectQuery(c.formats, c.genders, c.query, c.limit)
+		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
+			t.Errorf("projectQuery(%v, %v, %q, %d) == %v, want %v", c.formats, c.genders, c.query, c.limit, result, c.expected)
+		}
+	}
+}
+
 func TestRunQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
@@ -74,6 +138,108 @@ func TestRunQuery(t *testing.T) {
 		result := runQuery(c.query, c.limit)
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
 			t.Errorf("runQuery(%q, %d) == %v, want %v", c.query, c.limit, result, c.expected)
+		}
+	}
+}
+
+func TestAddAliases(t *testing.T) {
+	cases := []struct {
+		gender   string
+		format   string
+		query    string
+		expected string
+	}{
+		{
+			"men",
+			"t20i",
+			"WITH foo AS (SELECT * FROM bar) SELECT COUNT(*) FROM foo;",
+			`
+WITH
+innings AS (SELECT * FROM men_t20i_batting_innings),
+bowling_innings AS (SELECT * FROM men_t20i_bowling_innings),
+team_innings AS (SELECT * FROM men_t20i_team_innings)
+, foo AS (SELECT * FROM bar) SELECT COUNT(*) FROM foo;
+`,
+		},
+		{
+			"women",
+			"test",
+			"SELECT COUNT(*) FROM foo;",
+			`
+WITH
+innings AS (SELECT * FROM women_test_batting_innings),
+bowling_innings AS (SELECT * FROM women_test_bowling_innings),
+team_innings AS (SELECT * FROM women_test_team_innings)
+SELECT COUNT(*) FROM foo;
+`,
+		},
+	}
+
+	for _, c := range cases {
+		if addAliases(c.gender, c.format, c.query) != c.expected {
+			t.Errorf("addAliases(%q, %q, %q) == %v, want %v", c.gender, c.format, c.query, addAliases(c.gender, c.format, c.query), c.expected)
+		}
+	}
+}
+
+func TestInArray(t *testing.T) {
+	cases := []struct {
+		needle   string
+		haystack []string
+		expected bool
+	}{
+		{"men", []string{"men", "women"}, true},
+		{"women", []string{"men", "women"}, true},
+		{"test", []string{"men", "women"}, false},
+		{"test", []string{"test", "odi", "t20i"}, true},
+	}
+
+	for _, c := range cases {
+		if inArray(c.needle, c.haystack) != c.expected {
+			t.Errorf("inArray(%q, %q) == %v, want %v", c.needle, c.haystack, inArray(c.needle, c.haystack), c.expected)
+		}
+	}
+}
+
+func TestCheckboxValues(t *testing.T) {
+	cases := []struct {
+		checkboxes []Checkbox
+		checked    []string
+		expected   []Checkbox
+	}{
+		{
+			formatValues,
+			[]string{"t20i"},
+			[]Checkbox{
+				Checkbox{"Test", "test", false},
+				Checkbox{"ODI", "odi", false},
+				Checkbox{"T20I", "t20i", true},
+			},
+		},
+		{
+			formatValues,
+			[]string{"test", "t20i"},
+			[]Checkbox{
+				Checkbox{"Test", "test", true},
+				Checkbox{"ODI", "odi", false},
+				Checkbox{"T20I", "t20i", true},
+			},
+		},
+		{
+			formatValues,
+			[]string{},
+			[]Checkbox{
+				Checkbox{"Test", "test", true},
+				Checkbox{"ODI", "odi", true},
+				Checkbox{"T20I", "t20i", true},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		result := checkboxValues(c.checkboxes, c.checked)
+		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
+			t.Errorf("checkboxValues(%v, %v) == %v, want %v", c.checkboxes, c.checked, result, c.expected)
 		}
 	}
 }

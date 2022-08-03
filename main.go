@@ -28,10 +28,34 @@ type Result struct {
 	Messages []string
 }
 
+type LabelledResult struct {
+	Header string
+	Result Result
+}
+
 type Page struct {
 	Title   string
 	Content any
 }
+
+type Checkbox struct {
+	Label   string
+	Value   string
+	Checked bool
+}
+
+var formatValues = []Checkbox{
+	Checkbox{"Test", "test", false},
+	Checkbox{"ODI", "odi", false},
+	Checkbox{"T20I", "t20i", false},
+}
+
+var genderValues = []Checkbox{
+	Checkbox{"Men", "men", false},
+	Checkbox{"Women", "women", false},
+}
+
+var startsWithWith = regexp.MustCompile(`(?i)\AWITH`)
 
 var matchDate = regexp.MustCompile(`\A\d{4}-\d{2}-\d{2}( 00:00:00 \+0000 UTC)?\z`)
 var matchInteger = regexp.MustCompile(`\A\d+\z`)
@@ -81,6 +105,21 @@ func format(value any) string {
 	return text
 }
 
+func projectQuery(formats []Checkbox, genders []Checkbox, query string, limit int) (out []LabelledResult) {
+	for _, format := range formats {
+		for _, gender := range genders {
+			if format.Checked && gender.Checked {
+				out = append(out, LabelledResult{
+					fmt.Sprintf("%s's %s", gender.Label, format.Label),
+					runQuery(addAliases(gender.Value, format.Value, query), limit),
+				})
+			}
+		}
+	}
+
+	return
+}
+
 func runQuery(query string, limit int) Result {
 	messages := make([]string, 0)
 	rows := make([][]any, 0)
@@ -118,23 +157,68 @@ func runQuery(query string, limit int) Result {
 	}
 }
 
+func addAliases(gender string, format string, query string) string {
+	if startsWithWith.Match([]byte(query)) {
+		query = startsWithWith.ReplaceAllString(query, ",")
+	}
+
+	return fmt.Sprintf(`
+WITH
+innings AS (SELECT * FROM %[1]s_%[2]s_batting_innings),
+bowling_innings AS (SELECT * FROM %[1]s_%[2]s_bowling_innings),
+team_innings AS (SELECT * FROM %[1]s_%[2]s_team_innings)
+%[3]s
+`, gender, format, query)
+}
+
+func inArray(needle string, haystack []string) bool {
+	for _, value := range haystack {
+		if value == needle {
+			return true
+		}
+	}
+
+	return false
+}
+
+func checkboxValues(checkboxes []Checkbox, checked []string) (out []Checkbox) {
+	for _, checkbox := range checkboxes {
+		out = append(
+			out,
+			Checkbox{
+				checkbox.Label,
+				checkbox.Value,
+				len(checked) == 0 || inArray(checkbox.Value, checked),
+			},
+		)
+	}
+
+	return
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	query := r.FormValue("query")
+	formats := checkboxValues(formatValues, r.Form["format"])
+	genders := checkboxValues(genderValues, r.Form["gender"])
 
 	if query == "" {
-		query = "SELECT * FROM men_test_batting_innings LIMIT 10;"
+		query = "SELECT * FROM innings ORDER BY runs DESC LIMIT 10;"
 	}
 
 	executeTemplate(w, "index.html", Page{
 		Title: "Cricket query",
 		Content: struct {
-			Query   string
-			Results Result
+			Query           string
+			LabelledResults []LabelledResult
+			Formats         []Checkbox
+			Genders         []Checkbox
 		}{
-			Query:   query,
-			Results: runQuery(query, 100),
+			Query:           query,
+			LabelledResults: projectQuery(formats, genders, query, 100),
+			Formats:         formats,
+			Genders:         genders,
 		},
 	})
 }

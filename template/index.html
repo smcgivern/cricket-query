@@ -3,10 +3,27 @@
 <form action="." method="GET">
   <textarea name="query">{{ .Content.Query }}</textarea>
   <div id="editor"></div>
+  <p>
+    Format:
+    {{ range .Content.Formats }}
+    <label for="{{ .Value }}">{{ .Label }}</label>
+    <input type="checkbox" name="format" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
+    {{ end }}
+  </p>
+  <p>
+    Gender:
+    {{ range .Content.Genders }}
+    <label for="{{ .Value }}">{{ .Label }}</label>
+    <input type="checkbox" name="gender" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
+    {{ end }}
+  </p>
   <p><input type="submit"></p>
 </form>
 
-{{ template "_table.html" .Content.Results }}
+{{ range .Content.LabelledResults }}
+<h2>{{ .Header }}</h2>
+{{ template "_table.html" .Result }}
+{{ end }}
 
 <style type="text/css" media="screen">
   .editor-loaded, textarea {
