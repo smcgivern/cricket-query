@@ -134,7 +134,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 			Results Result
 		}{
 			Query:   query,
-			Results: runQuery(query, 9),
+			Results: runQuery(query, 100),
 		},
 	})
 }
