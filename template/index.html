@@ -1,9 +1,42 @@
 {{ template "_layout.html" . }}
 {{ define "content" }}
 <form action="." method="GET">
-  <p><textarea name="query">{{ .Content.Query }}</textarea></p>
+  <textarea name="query">{{ .Content.Query }}</textarea>
+  <div id="editor"></div>
   <p><input type="submit"></p>
 </form>
 
 {{ template "_table.html" .Content.Results }}
+
+<style type="text/css" media="screen">
+  .editor-loaded, textarea {
+    position: relative;
+    width: 100%;
+    height: 10em;
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/ace.min.js" integrity="sha512-IunksvjFi1CZJ59SN0Fw0dSkjMgLrY1PQ0WVPv1L3er6z1zW0AVLXs9nM2ZoEisoRo8eHDQn8FOs2KsZPwrUww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/mode-sql.min.js" integrity="sha512-UBVNzqbl7u/EDMuOgFoE81YqUScjz/Uo4B3VhjlOqtKhi741M7ERSUllUeBxwr8khutma/UbCJ7+R8KDdUA52w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-chrome.min.js" integrity="sha512-U6FGB8uDHjnYaZ97jiksMiooP4I+fZRFRtug4FgL9WPXHMEb3e5peKfn1+PQL3uAm7xbKJoykjr3OKAe6r7vgQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script type="text/javascript">
+  var editor = ace.edit('editor', {
+    mode: 'ace/mode/sql',
+    theme: 'ace/theme/chrome',
+    maxLines: 1000,
+    showLineNumbers: false,
+    showGutter: false
+  });
+
+  var textarea = document.querySelector('textarea[name="query"]');
+
+  textarea.style.display = 'none';
+
+  editor.className = 'editor-loaded';
+  editor.setValue(textarea.value);
+  editor.session.on('change', function() {
+    textarea.value = editor.getSession().getValue();
+  });
+</script>
 {{ end }}
