@@ -1,0 +1,6 @@
+{{ template "_layout.html" . }}
+{{ define "content" }}
+<h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>
+
+{{ template "_table.html" .Content.Latest }}
+{{ end }}
