@@ -11,7 +11,7 @@ if [ -f "${target}" ]; then
     if [ "${backup}" ]; then
         mv "${target}" "${target}.$(date +'%Y-%m-%dT%H-%M-%S')"
     else
-        rm "${target}"
+        rm -f "${target}"
     fi
 fi
 
