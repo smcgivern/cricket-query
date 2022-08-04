@@ -1,6 +1,218 @@
 {{ template "_layout.html" . }}
 {{ define "content" }}
+<h2 id="basics">Basics <a href="#basics">¶</a></h2>
+
+<p>
+  This is an interface to an <a href="https://www.sqlite.org/">SQLite</a>
+  database. The database contains a scrape of
+  Cricinfo's <a href="https://stats.espncricinfo.com/ci/engine/stats/index.html">Statsguru</a>
+  batting, bowling and team tabs. It allows running (read-only) SQL queries
+  directly.
+</p>
+
+<p>
+  Other sections on this page
+  are <a href="#schema">schema</a>, <a href="#annoyances">annoyances</a>,
+  and <a href="#latest-data">latest data</a>.
+</p>
+
+<h2 id="schema">Schema <a href="#schema">¶</a></h2>
+
+<p>
+  This is a pretty direct interface to
+  an <a href="https://www.sqlite.org/">SQLite</a> database. The database
+  contains a scrape of
+  Cricinfo's <a href="https://stats.espncricinfo.com/ci/engine/stats/index.html">Statsguru</a>
+  batting, bowling and team tabs in the following tables,
+  where <code>$gender</code> can be <code>men</code> or <code>women</code>
+  and <code>$format</code> can be <code>test</code>, <code>odi</code>,
+  or <code>t20i</code>.
+</p>
+
+<ul>
+  <li><code>$gender_$format_batting_innings</code></li>
+  <li><code>$gender_$format_bowling_innings</code></li>
+  <li><code>$gender_$format_team_innings</code></li>
+</ul>
+
+<h3 id="table-aliases">Table aliases <a href="#table-aliases">¶</a></h3>
+
+<p>
+  As the table names are very long, and for many purposes we will want to
+  separate the results by gender and format anyway (comparing a T20I average to
+  a Test average is not often useful), these tables have shorter names available
+  when choosing genders and formats with the checkboxes:
+</p>
+
+<ul>
+  <li><code>innings</code> - <code>$gender_$format_batting_innings</code></li>
+  <li><code>bowling_innings</code> - <code>$gender_$format_bowling_innings</code></li>
+  <li><code>team_innings</code> - <code>$gender_$format_team_innings</code></li>
+</ul>
+
+<p>
+  This will allow a separate results table for each gender and format chosen. If
+  we use the full table names (for
+  instance, <code>women_test_bowling_innings</code>) directly, then the results
+  shown for all genders and formats will be the same.
+</p>
+
+<h3 id="batting-tables">Batting tables <a href="#batting-tables">¶</a></h3>
+
+<table>
+  <thead>
+    <tr><th>Column name</th> <th>Type</th> <th>Comment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>i</code></td> <td>integer</td> <td>Internal ID, not particularly useful</td></tr>
+    <tr><td><code>player</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>team</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>runs</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>runs_txt</code></td> <td>text</td> <td>Score, suffixed with <code>*</code> if not out</td></tr>
+    <tr><td><code>not_out</code></td> <td>boolean</td> <td>See <a href="#boolean-columns">boolean columns</a></td></tr>
+    <tr><td><code>mins</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>bf</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>fours</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>sixes</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>sr</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>pos</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>innings</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+  </tbody>
+</table>
+
+<h3 id="bowling-tables">Bowling tables <a href="#bowling-tables">¶</a></h3>
+
+<table>
+  <thead>
+    <tr><th>Column name</th> <th>Type</th> <th>Comment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>i</code></td> <td>integer</td> <td>Internal ID, not particularly useful</td></tr>
+    <tr><td><code>player</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>team</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>overs</code></td> <td>text</td> <td>May contain a dot; for instance, <code>4.1</code></td></tr>
+    <tr><td><code>maidens</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>runs</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>wickets</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>bpo</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>balls</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>economy</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>pos</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>innings</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+  </tbody>
+</table>
+
+<h3 id="team-tables">Team tables <a href="#team-tables">¶</a></h3>
+
+<table>
+  <thead>
+    <tr><th>Column name</th> <th>Type</th> <th>Comment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>i</code></td> <td>integer</td> <td>Internal ID, not particularly useful</td></tr>
+    <tr><td><code>team</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>score</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>runs</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>overs</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>bpo</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>rpo</code></td> <td>numeric</td> <td></td></tr>
+    <tr><td><code>lead</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>all_out</code></td> <td>boolean</td> <td>See <a href="#boolean-columns">boolean columns</a></td></tr>
+    <tr><td><code>declared</code></td> <td>boolean</td> <td>See <a href="#boolean-columns">boolean columns</a></td></tr>
+    <tr><td><code>result</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>innings</code></td> <td>integer</td> <td></td></tr>
+    <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
+    <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+  </tbody>
+</table>
+
+<h2 id="annoyances">Annoyances <a href="#annoyances">¶</a></h2>
+
+<p>
+  There are several limitations in this database, largely due to a loss of
+  fidelity when scraping and the choice to use a loosely-typed database. These
+  are the most annoying of those.
+</p>
+
+<h3 id="boolean-columns">Boolean columns <a href="#boolean-columns">¶</a></h3>
+
+<p>
+  Boolean columns (like <code>innings.not_out</code>
+  and <code>team_innings.all_out</code>) are not real booleans, as SQLite
+  doesn't support them. Instead, they contain the strings <code>'True'</code>
+  and <code>'False'</code>, so compare directly against those values.
+</p>
+
+<h3 id="date-columns">Date columns <a href="#date-columns">¶</a></h3>
+
+<p>
+  Similarly, the <code>start_date</code> columns are not real dates. For
+  prettier formatting, they are displayed in a format like this: 2 June 2021.
+</p>
+
+<p>
+  However, internally they are represented as ISO date strings: 2021-06-02. To
+  find matches on that date, we can use <code>start_date = '2021-06-02'</code>.
+</p>
+
+<h3 id="players-with-the-same-name">Players with the same name <a href="#players-with-the-same-name">¶</a></h3>
+
+<p>
+  Players do not have a unique identifier beyond their name. For most players
+  this is OK as their names are unique in their field, at least when combined
+  with the team they play for. However, there are some who are not unique even
+  with that qualifier. For instance, there are two JP Duminys who played for
+  South
+  Africa: <a href="https://www.espncricinfo.com/player/jacobus-duminy-44731">Jacobus
+  Petrus Duminy</a>
+  and <a href="https://www.espncricinfo.com/player/jean-paul-duminy-44932">Jean-Paul
+  Duminy</a>.
+</p>
+
+<p>
+  Often these players can be further disambiguated by also grabbing their debut
+  (<code>MIN(start_date)</code>), but it's not particularly convenient.
+</p>
+
+<h3 id="games-on-the-same-day">Games on the same day <a href="#games-on-the-same-day">¶</a></h3>
+
+<p>
+  There has never been an instance of two Tests being played between the same
+  two teams on the same day. This has happened quite a few times in T20Is,
+  though. For instance, on 11 June 2022, Belgium played Malta twice at Gent,
+  batting first and winning both times:
+  by <a href="https://www.espncricinfo.com/series/malta-in-belgium-2022-1318294/belgium-vs-malta-1st-t20i-1318354/full-scorecard">111
+  runs</a>
+  and <a href="https://www.espncricinfo.com/series/malta-in-belgium-2022-1318294/belgium-vs-malta-2nd-t20i-1318355/full-scorecard">84
+  runs</a>. The toss was different in these two games, but this database does
+  not contain the toss result, or the match ID.
+</p>
+
+<p>
+  For this case, I do not have a good suggestion to disambiguate, other than to
+  sanity check results in obscure T20Is that seem extreme.
+</p>
+
+<h3 id="results-limit">Results limit <a href="#results-limit">¶</a></h3>
+
+<p>
+  Hopefully this is less annoying, but I have chosen to limit the number of rows
+  in each table to 100, no matter how many rows were returned. If this becomes a
+  problem I can increase it.
+</p>
+
 <h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>
+
+<p>
+  The database is updated semi-regularly. The latest match for each format is:
+</p>
 
 {{ template "_table.html" .Content.Latest }}
 {{ end }}
