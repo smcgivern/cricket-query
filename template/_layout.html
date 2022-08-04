@@ -15,5 +15,11 @@
   <body>
     <h1>{{ .Title }}</h1>
     {{ block "content" . }}{{ end }}
+    <div id="byline">
+      <p>
+        By
+        <a href="http://sean.mcgivern.me.uk/">Sean McGivern</a>
+      </p>
+    </div>
   </body>
 </html>
