@@ -2,6 +2,84 @@
   <head>
     <title>{{ .Title }}</title>
     <style type="text/css" media="screen">
+      body, input {
+        font-family: "Palatino Linotype", "Palatino", "URW Palladio L", "Book Antiqua", "Baskerville", "Bitstream Charter", "Garamond", "Georgia", serif;
+        font-size: 105%;
+        color: #000;
+        background: #fff;
+      }
+
+      body {
+        line-height: 1.6;
+        width: 50em;
+        margin: 0em auto;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: "Gill Sans", "Gill Sans MT", "GillSans", "Calibri", "Trebuchet MS", sans-serif;
+        text-align: center;
+        font-weight: normal;
+      }
+
+      :link,:link:active,:link:hover, .click {
+        color: #0000ff;
+        background: transparent;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      :link:visited {
+        color: #800080;
+        background: transparent;
+      }
+
+      .outer {
+        display: flex;
+        justify-content: center;
+      }
+
+      table {
+        margin-left: auto;
+        margin-right: auto;
+        border-collapse: collapse;
+        display: inline-block;
+      }
+
+      table {
+        border: 1px solid black;
+        line-height: initial;
+      }
+
+      table.results {
+        width: 100%;
+      }
+
+      td, th {
+        border: 1px dotted black;
+      }
+
+      thead {
+        border-bottom: 1px solid black;
+      }
+
+      tbody th {
+        text-align: left;
+      }
+
+      td {
+        min-width: 2em;
+        margin: 0;
+        padding: 0.2em;
+        text-align: right;
+      }
+
+      #byline {
+        clear: both;
+        text-align: right;
+        font-size: 75%;
+        font-style: italic;
+      }
+
       h2 a, h3 a {
         visibility: hidden;
         font-size: smaller;
