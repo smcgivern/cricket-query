@@ -21,3 +21,7 @@ The format is very barebones, being line-delimited:
 3. Formats (blank line for all; otherwise `"test", "odi", "t20i"`).
 4. Genders (blank line for all; otherwise `"men", "women"`).
 5. Query (all remaining lines; can span multiple lines).
+
+After updating this, run `make` or `make run` (which will automatically
+invoke `make saved_queries.go`) to update `saved_queries.go`. Do not
+update this file manually.
