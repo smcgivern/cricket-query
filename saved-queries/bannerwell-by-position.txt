@@ -10,7 +10,7 @@ teams AS (
   -- Skip cases with multiple games between the same teams on the same day
   HAVING COUNT(*) = 1
 ),
-bannermen_by_position AS (
+bannerwell_by_position AS (
   SELECT
     innings.ground,
     innings.start_date,
@@ -41,7 +41,7 @@ FROM (
     runs,
     team_runs,
     proportion
-  FROM bannermen_by_position
+  FROM bannerwell_by_position
   WHERE runs IS NOT NULL
 ) ranked
 WHERE rank <= 3 AND pos BETWEEN 3 and 11

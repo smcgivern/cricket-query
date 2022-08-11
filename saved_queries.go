@@ -1,6 +1,44 @@
 package main
 
 var savedQueries = map[string]Query{
+	"bannerwell-bowling": Query{
+		Subtitle:    "Bowling Bannerwell",
+		Description: "The highest proportion of runs conceded by a bowler in an innings where the opposition were all out.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH
+teams AS (
+  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  FROM team_innings
+  GROUP BY ground, start_date, innings, team, opposition
+  -- Skip cases with multiple games between the same teams on the same day
+  HAVING COUNT(*) = 1
+),
+bowling_bannerwell AS (
+  SELECT
+    teams.team AS batting_team,
+    teams.opposition AS bowling_team,
+    teams.ground,
+    teams.start_date,
+    teams.innings,
+    teams.runs AS team_total,
+    bowling_innings.player,
+    bowling_innings.runs AS runs_conceded,
+    (CAST(bowling_innings.runs AS real) / teams.runs) AS proportion
+  FROM bowling_innings
+  INNER JOIN teams ON
+    bowling_innings.ground = teams.ground AND
+    bowling_innings.start_date = teams.start_date AND
+    bowling_innings.team = teams.opposition AND
+    bowling_innings.innings = teams.innings
+  WHERE bowling_innings.runs IS NOT NULL AND
+    teams.all_out = 'True'
+)
+SELECT batting_team, bowling_team, ground, start_date, innings, team_total, player, runs_conceded, proportion
+FROM bowling_bannerwell
+ORDER BY proportion DESC
+LIMIT 10;`,
+	},
 	"bannerwell-by-position": Query{
 		Subtitle:    "Bannerwell by position",
 		Description: "Enid Bakewell and Charles Bannerman set their records while opening, which is easy mode. Which players made the biggest proportion of their team's runs from other positions?",
@@ -14,7 +52,7 @@ teams AS (
   -- Skip cases with multiple games between the same teams on the same day
   HAVING COUNT(*) = 1
 ),
-bannermen_by_position AS (
+bannerwell_by_position AS (
   SELECT
     innings.ground,
     innings.start_date,
@@ -45,7 +83,7 @@ FROM (
     runs,
     team_runs,
     proportion
-  FROM bannermen_by_position
+  FROM bannerwell_by_position
   WHERE runs IS NOT NULL
 ) ranked
 WHERE rank <= 3 AND pos BETWEEN 3 and 11
