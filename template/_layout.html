@@ -1,6 +1,9 @@
 <html>
   <head>
-    <title>{{ .Title }}</title>
+    <title>{{ if .Query.Subtitle }}{{ .Query.Subtitle }} | {{ end }}{{ .Title }}</title>
+    {{ if .Query.Description }}
+    <meta name="description" content="{{ .Query.Description }}">
+    {{ end }}
     <style type="text/css" media="screen">
       body, input {
         font-family: "Palatino Linotype", "Palatino", "URW Palladio L", "Book Antiqua", "Baskerville", "Bitstream Charter", "Garamond", "Georgia", serif;
