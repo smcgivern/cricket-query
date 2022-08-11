@@ -1,0 +1,19 @@
+Fewer runs than innings
+Players who made it the most innings into their career with fewer than one run per innings.
+
+
+WITH
+running AS (
+  SELECT
+    player,
+    SUM(runs) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_runs,
+    COUNT(*) OVER (PARTITION BY player ORDER BY start_date, innings) - 1 AS innings_count
+  FROM innings
+  WHERE runs IS NOT NULL
+  ORDER BY player, start_date, innings
+)
+SELECT *
+FROM running
+WHERE cumulative_runs < innings_count
+ORDER BY innings_count DESC
+LIMIT 20;

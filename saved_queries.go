@@ -1,6 +1,98 @@
 package main
 
 var savedQueries = map[string]Query{
+	"bannerwell-by-position": Query{
+		Subtitle:    "Bannerwell by position",
+		Description: "Enid Bakewell and Charles Bannerman set their records while opening, which is easy mode. Which players made the biggest proportion of their team's runs from other positions?",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH
+teams AS (
+  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  FROM team_innings
+  GROUP BY ground, start_date, innings, team, opposition
+  -- Skip cases with multiple games between the same teams on the same day
+  HAVING COUNT(*) = 1
+),
+bannermen_by_position AS (
+  SELECT
+    innings.ground,
+    innings.start_date,
+    innings.team,
+    innings.player,
+    innings.pos,
+    innings.innings,
+    innings.runs AS runs,
+    teams.runs AS team_runs,
+    CAST(innings.runs AS real) / teams.runs AS proportion
+  FROM innings
+  INNER JOIN teams ON
+    innings.ground = teams.ground AND
+    innings.start_date = teams.start_date AND
+    innings.team = teams.team AND
+    innings.opposition = teams.opposition AND
+    innings.innings = teams.innings
+  WHERE teams.all_out = 'True'
+)
+SELECT *
+FROM (
+  SELECT
+    pos,
+    row_number() OVER (PARTITION BY pos ORDER BY proportion DESC) AS rank,
+    player,
+    team,
+    start_date,
+    runs,
+    team_runs,
+    proportion
+  FROM bannermen_by_position
+  WHERE runs IS NOT NULL
+) ranked
+WHERE rank <= 3 AND pos BETWEEN 3 and 11
+ORDER BY pos, rank;`,
+	},
+	"bannerwell-by-year": Query{
+		Subtitle:    "Bannerwell by year",
+		Description: "The players who made the highest proportion of their team's runs in a calendar year. For Tests, this considers all runs as made on the match's start date, so won't be accurate for matches that span two calendar years.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH
+by_player AS (
+  SELECT
+    "'" || strftime('%Y', start_date) AS year,
+    team,
+    player,
+    SUM(runs) AS runs,
+    SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS outs
+  FROM innings
+  GROUP BY year, team, player
+),
+by_team AS (
+  SELECT year, team, SUM(runs) AS runs, SUM(outs) AS outs
+  FROM by_player
+  GROUP BY year, team
+)
+SELECT
+  by_player.year,
+  by_player.team,
+  by_player.player,
+  SUM(by_player.runs) AS player_runs,
+  (CAST(SUM(by_player.runs) AS real) / SUM(by_player.outs)) AS player_average,
+  SUM(by_team.runs) AS team_runs,
+  (CAST(SUM(by_team.runs) AS real) / SUM(by_team.outs)) AS team_average,
+  (CAST(SUM(by_player.runs) AS real) / SUM(by_team.runs)) AS proportion
+FROM by_player
+INNER JOIN by_team ON
+  by_player.year = by_team.year AND
+  by_player.team = by_team.team
+WHERE by_player.runs IS NOT NULL AND
+  by_team.runs IS NOT NULL AND
+  by_player.outs > 0 AND
+  by_player.runs > 500
+GROUP BY by_player.year, by_player.team, by_player.player
+ORDER BY proportion DESC
+LIMIT 10;`,
+	},
 	"bannerwell": Query{
 		Subtitle:    "Bannerwell",
 		Description: "The Bannerwell (Bannerman / Bakewell) is the proportion of runs made in a completed team innings. In the very first men's Test innings, Charles Bannerman made 165 out of 245 for 67%, a record which still stands in men's Tests today. Enid Bakewell bettered that in a women's Test in 1979, with 68% of her team's score.",
@@ -74,6 +166,27 @@ GROUP BY first, seq
 ORDER BY count DESC
 LIMIT 20;`,
 	},
+	"fewer-runs-than-innings": Query{
+		Subtitle:    "Fewer runs than innings",
+		Description: "Players who made it the most innings into their career with fewer than one run per innings.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH
+running AS (
+  SELECT
+    player,
+    SUM(runs) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_runs,
+    COUNT(*) OVER (PARTITION BY player ORDER BY start_date, innings) - 1 AS innings_count
+  FROM innings
+  WHERE runs IS NOT NULL
+  ORDER BY player, start_date, innings
+)
+SELECT *
+FROM running
+WHERE cumulative_runs < innings_count
+ORDER BY innings_count DESC
+LIMIT 20;`,
+	},
 	"highest-lowest-cumulative-average": Query{
 		Subtitle:    "Highest lowest cumulative average",
 		Description: "This shows the lowest average each player had at the end of any innings in their career, and ranks them by that low point.",
@@ -104,6 +217,33 @@ FROM lowest_cumulative_averages
 WHERE total_runs > 1000
 ORDER BY lowest_cumulative_average DESC
 LIMIT 10;`,
+	},
+	"lowest-high-score": Query{
+		Subtitle:    "Lowest high score after N innings",
+		Description: "Players with the lowest high score after N innings.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH
+running AS (
+  SELECT
+    player,
+    MAX(runs) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_high_score,
+    COUNT(*) OVER (PARTITION BY player ORDER BY start_date, innings) AS innings_count
+  FROM innings
+  WHERE runs IS NOT NULL
+  ORDER BY player, start_date, innings
+),
+lowest AS (
+  SELECT innings_count, MIN(cumulative_high_score) AS lowest_high_score
+  FROM running
+  GROUP BY innings_count
+)
+SELECT lowest.innings_count AS innings, player, lowest_high_score AS high_score
+FROM lowest
+INNER JOIN running ON cumulative_high_score = lowest_high_score
+  AND running.innings_count = lowest.innings_count
+WHERE lowest.innings_count IN (10, 25, 50, 100, 200, 300)
+ORDER BY lowest.innings_count;`,
 	},
 	"most-boundary-runs": Query{
 		Subtitle:    "Highest proportion of runs in boundaries",

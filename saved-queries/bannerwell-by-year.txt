@@ -1,0 +1,40 @@
+Bannerwell by year
+The players who made the highest proportion of their team's runs in a calendar year. For Tests, this considers all runs as made on the match's start date, so won't be accurate for matches that span two calendar years.
+
+
+WITH
+by_player AS (
+  SELECT
+    "'" || strftime('%Y', start_date) AS year,
+    team,
+    player,
+    SUM(runs) AS runs,
+    SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS outs
+  FROM innings
+  GROUP BY year, team, player
+),
+by_team AS (
+  SELECT year, team, SUM(runs) AS runs, SUM(outs) AS outs
+  FROM by_player
+  GROUP BY year, team
+)
+SELECT
+  by_player.year,
+  by_player.team,
+  by_player.player,
+  SUM(by_player.runs) AS player_runs,
+  (CAST(SUM(by_player.runs) AS real) / SUM(by_player.outs)) AS player_average,
+  SUM(by_team.runs) AS team_runs,
+  (CAST(SUM(by_team.runs) AS real) / SUM(by_team.outs)) AS team_average,
+  (CAST(SUM(by_player.runs) AS real) / SUM(by_team.runs)) AS proportion
+FROM by_player
+INNER JOIN by_team ON
+  by_player.year = by_team.year AND
+  by_player.team = by_team.team
+WHERE by_player.runs IS NOT NULL AND
+  by_team.runs IS NOT NULL AND
+  by_player.outs > 0 AND
+  by_player.runs > 500
+GROUP BY by_player.year, by_player.team, by_player.player
+ORDER BY proportion DESC
+LIMIT 10;
