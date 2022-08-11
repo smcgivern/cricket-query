@@ -17,7 +17,7 @@
     <input type="checkbox" name="gender" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
     {{ end }}
   </p>
-  <p><input type="submit"> (<a href="{{ baseUrl "/help/" }}">help</a>)</p>
+  <p><input type="submit" value="Run query"> (<a href="{{ baseUrl "/help/" }}">help</a>)</p>
 </form>
 
 {{ range .Content.LabelledResults }}
