@@ -13,6 +13,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -104,6 +105,17 @@ func format(value any) string {
 	}
 
 	return text
+}
+
+func baseUrl(url string) string {
+	rootLeadingSlash := "/cricket-query"
+	rootDoubleSlash := "/cricket-query/"
+
+	if strings.HasPrefix(url, "/") && !strings.HasPrefix(url, rootDoubleSlash) {
+		return fmt.Sprintf("%s%s", rootLeadingSlash, url)
+	} else {
+		return url
+	}
 }
 
 func projectQuery(formats []Checkbox, genders []Checkbox, query string, limit int) (out []LabelledResult) {
@@ -256,7 +268,8 @@ func executeTemplate(w http.ResponseWriter, path string, page Page) {
 		template.
 			New("").
 			Funcs(template.FuncMap{
-				"format": format,
+				"format":  format,
+				"baseUrl": baseUrl,
 			}).
 			ParseFS(templatesFS, "template/_*.html", "template/"+path)).
 		ExecuteTemplate(w, path, page)
@@ -277,8 +290,8 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", index)
-	http.HandleFunc("/help", help)
+	http.HandleFunc(baseUrl("/"), index)
+	http.HandleFunc(baseUrl("/help/"), help)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), logRequests(http.DefaultServeMux)))
 }

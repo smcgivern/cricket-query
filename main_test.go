@@ -36,6 +36,23 @@ func TestFormat(t *testing.T) {
 	}
 }
 
+func TestBaseUrl(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{"/help/", "/cricket-query/help/"},
+		{"help", "help"},
+		{"/cricket-query/help/", "/cricket-query/help/"},
+	}
+
+	for _, c := range cases {
+		if baseUrl(c.input) != c.expected {
+			t.Errorf("baseUrl(%q) == %v, want %v", c.input, baseUrl(c.input), c.expected)
+		}
+	}
+}
+
 func TestProjectQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)

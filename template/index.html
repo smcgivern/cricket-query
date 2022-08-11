@@ -1,6 +1,6 @@
 {{ template "_layout.html" . }}
 {{ define "content" }}
-<form action="." method="GET">
+<form action="{{ baseUrl "/" }}" method="GET">
   <textarea name="query">{{ .Content.Query }}</textarea>
   <div id="editor"></div>
   <p>
@@ -17,7 +17,7 @@
     <input type="checkbox" name="gender" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
     {{ end }}
   </p>
-  <p><input type="submit"> (<a href="./help">help</a>)</p>
+  <p><input type="submit"> (<a href="{{ baseUrl "/help/" }}">help</a>)</p>
 </form>
 
 {{ range .Content.LabelledResults }}
