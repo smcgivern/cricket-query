@@ -272,4 +272,17 @@ WHERE average > 0
 ORDER BY boundary_proportion DESC
 LIMIT 10;`,
 	},
+	"t20i-innings-with-max-three-overs": Query{
+		Subtitle:    "T20I innings with no bowlers bowling out",
+		Description: "T20I bowling innings where a team bowled all 20 overs, but no individual bowler bowled more than 3 overs.",
+		Formats:     checkboxValues(formatValues, []string{"t20i"}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		Query: `WITH bowling AS (
+  SELECT *, CAST(overs AS integer) AS oversn FROM bowling_innings
+)
+SELECT team, opposition, ground, start_date, MAX(oversn) AS max_overs
+FROM bowling
+GROUP BY team, opposition, ground, start_date
+HAVING MAX(oversn) < 4 AND SUM(oversn) = 20`,
+	},
 }
