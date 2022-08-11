@@ -1,0 +1,32 @@
+Most consecutive wins batting or fielding first
+This shows the most consecutive wins batting or fielding first by format, across all teams. For instance, if team A wins batting first, then teams B and C draw, then team A wins batting first, then team B wins batting first, that's a streak of one win, followed by no streak, followed by a streak of two wins.
+
+
+WITH wins AS (
+  SELECT
+    team,
+    opposition,
+    ground,
+    start_date,
+    result,
+    CASE WHEN MIN(innings) = 1 THEN 'bat' ELSE 'field' END AS first
+  FROM team_innings
+  WHERE result IN ('won', 'draw')
+  GROUP BY team, opposition, ground, start_date, result
+),
+consecutive AS (
+  SELECT
+    *,
+    (
+      row_number() over(ORDER BY start_date)
+      -
+      row_number() over(PARTITION BY result, first ORDER BY start_date)
+    ) AS seq
+  FROM wins
+)
+SELECT first, MIN(start_date) AS start, MAX(start_date) AS end, COUNT(*) AS count
+ FROM consecutive
+WHERE result = 'won'
+GROUP BY first, seq
+ORDER BY count DESC
+LIMIT 20;

@@ -1,0 +1,25 @@
+Highest proportion of runs in boundaries
+This shows the players with the highest proportion of career runs made in boundaries, where the player has made at least 500 runs in the format.
+
+
+WITH
+averages AS (
+  SELECT
+    player,
+    SUM(runs) AS total_runs,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out THEN 0 ELSE 1 END) AS average,
+    SUM(fours) AS fours,
+    SUM(sixes) AS sixes,
+    (
+      ((SUM(sixes) * 6) + (SUM(fours) * 4)) / CAST(SUM(runs) AS real)
+    ) AS boundary_proportion
+  FROM innings
+  GROUP BY player
+  HAVING SUM(fours) > 0 AND SUM(sixes) > 0
+)
+SELECT player, total_runs, average, fours, sixes, boundary_proportion
+FROM averages
+WHERE average > 0
+  AND total_runs > 500
+ORDER BY boundary_proportion DESC
+LIMIT 10;

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+target=saved_queries.go
+
+join() {
+    local IFS=$'\n'
+    shift
+    echo "$*"
+}
+
+saved_query() {
+    unset -v lines
+    while IFS= read -r; do
+        lines+=("$REPLY")
+    done < "${1}"
+
+    sql=$(join "${lines[@]:3}")
+
+    read -r -d '' query <<query
+"$(basename "${1}" .txt)": Query{
+Subtitle: "${lines[0]}",
+Description: "${lines[1]}",
+Formats: checkboxValues(formatValues, []string{${lines[2]}}),
+Genders: checkboxValues(genderValues, []string{${lines[3]}}),
+Query: \`${sql}\`,
+},
+query
+
+    echo "${query}"
+}
+
+
+read -r -d '' file <<file
+package main
+
+var savedQueries = map[string]Query{
+$(for f in saved-queries/*.txt; do saved_query "${f}"; done)
+}
+file
+
+echo "${file}" > "${target}"
+gofmt -w "${target}"

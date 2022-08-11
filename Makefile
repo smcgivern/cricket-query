@@ -1,5 +1,5 @@
 .PHONY: test
-test: fmt testdata/innings.sqlite3
+test: fmt testdata/innings.sqlite3 saved_queries.go
 	@go test .
 
 .PHONY: release
@@ -11,12 +11,15 @@ clean:
 	rm release/cricket-query
 
 .PHONY: run
-run: fmt data/innings.sqlite3
+run: fmt data/innings.sqlite3 saved_queries.go
 	@go run .
 
 .PHONY: fmt
 fmt:
 	@go fmt
+
+saved_queries.go: saved-queries/*.txt scripts/create-saved-queries
+	scripts/create-saved-queries
 
 data/innings.sqlite3: data/*.csv scripts/create-db
 	scripts/create-db data
@@ -25,7 +28,7 @@ release/data/innings.sqlite3: data/innings.sqlite3
 	mkdir -p release/data
 	cp data/innings.sqlite3 release/data
 
-release/cricket-query: main.go
+release/cricket-query: *.go
 	go build -o release/cricket-query
 
 testdata/innings.sqlite3: scripts/create-db

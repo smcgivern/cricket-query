@@ -1,0 +1,29 @@
+Highest lowest cumulative average
+This shows the lowest average each player had at the end of any innings in their career, and ranks them by that low point.
+
+
+WITH
+cumulative AS (
+  SELECT
+    player,
+    runs,
+    SUM(runs) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_runs,
+    SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_outs
+  FROM innings
+  ORDER BY player, start_date, innings
+),
+averages AS (
+  SELECT player, runs, CAST(cumulative_runs AS real) / cumulative_outs AS cumulative_average
+  FROM cumulative
+  WHERE cumulative_outs > 0
+),
+lowest_cumulative_averages AS (
+  SELECT player, SUM(runs) AS total_runs, MIN(cumulative_average) AS lowest_cumulative_average
+  FROM averages
+  GROUP BY player
+)
+SELECT player, total_runs, lowest_cumulative_average
+FROM lowest_cumulative_averages
+WHERE total_runs > 1000
+ORDER BY lowest_cumulative_average DESC
+LIMIT 10;

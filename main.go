@@ -56,6 +56,8 @@ type Checkbox struct {
 	Checked bool
 }
 
+var rowsLimit = 100
+
 var formatValues = []Checkbox{
 	Checkbox{"Test", "test", false},
 	Checkbox{"ODI", "odi", false},
@@ -249,7 +251,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		Content: struct {
 			LabelledResults []LabelledResult
 		}{
-			projectQuery(query, 100),
+			projectQuery(query, rowsLimit),
 		},
 	})
 }
@@ -316,52 +318,4 @@ func main() {
 	http.HandleFunc(baseUrl("/help/"), help)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), logRequests(http.DefaultServeMux)))
-}
-
-var savedQueries = map[string]Query{
-	"bannerwell": Query{
-		checkboxValues(formatValues, []string{}),
-		checkboxValues(genderValues, []string{}),
-		`WITH
-teams AS (
-  SELECT ground, start_date, innings, team, opposition, runs, all_out
-  FROM team_innings
-  GROUP BY ground, start_date, innings, team, opposition
-  -- Skip cases with multiple games between the same teams on the same day
-  HAVING COUNT(*) = 1
-),
-bannerwell AS (
-  SELECT
-    innings.ground,
-    innings.start_date,
-    innings.team,
-    innings.opposition,
-    innings.player,
-    innings.innings,
-    innings.runs AS runs,
-    teams.runs AS team_runs,
-    (CAST(innings.runs AS real) / teams.runs) AS proportion
-  FROM innings
-  INNER JOIN teams ON
-    innings.ground = teams.ground AND
-    innings.start_date = teams.start_date AND
-    innings.team = teams.team AND
-    innings.innings = teams.innings AND
-    innings.opposition = teams.opposition
-  WHERE teams.all_out = 'True'
-)
-SELECT player, team, ground, opposition, start_date, runs, team_runs, proportion
-FROM bannerwell
-WHERE runs IS NOT NULL
-ORDER BY proportion DESC
-LIMIT 10;`,
-		"Bannerwell",
-		`
-The Bannerwell (Bannerman / Bakewell) is the proportion of runs made
-in a completed team innings. In the very first men's Test innings,
-Charles Bannerman made 165 out of 245 for 67%, a record which still
-stands in men's Tests today. Enid Bakewell bettered that in a women's
-Test in 1979, with 68% of her team's score.
-`,
-	},
 }
