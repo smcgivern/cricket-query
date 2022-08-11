@@ -9,8 +9,14 @@
   database. The database contains a scrape of
   Cricinfo's <a href="https://stats.espncricinfo.com/ci/engine/stats/index.html">Statsguru</a>
   batting, bowling and team tabs. It allows running (read-only) SQL queries
-  directly.
+  directly, and has some saved queries:
 </p>
+
+<ul>
+  {{ range $id, $query := .Content.SavedQueries }}
+  <li><a href="{{ baseUrl "/?queryId=" }}{{ $id }}">{{ $query.Subtitle }}</a></li>
+  {{ end }}
+</ul>
 
 <p>
   Other sections on this page

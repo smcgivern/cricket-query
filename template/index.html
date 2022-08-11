@@ -1,24 +1,38 @@
 {{ template "_layout.html" . }}
 {{ define "content" }}
-<form action="{{ baseUrl "/" }}" method="GET">
-  <textarea name="query">{{ .Content.Query }}</textarea>
-  <div id="editor"></div>
-  <p>
-    Format:
-    {{ range .Content.Formats }}
-    <label for="{{ .Value }}">{{ .Label }}</label>
-    <input type="checkbox" name="format" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
-    {{ end }}
-  </p>
-  <p>
-    Gender:
-    {{ range .Content.Genders }}
-    <label for="{{ .Value }}">{{ .Label }}</label>
-    <input type="checkbox" name="gender" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
-    {{ end }}
-  </p>
-  <p><input type="submit" value="Run query"> (<a href="{{ baseUrl "/help/" }}">help</a>)</p>
-</form>
+{{ if .Query.Subtitle }}
+<h2>{{ .Query.Subtitle }}</h2>
+{{ end }}
+
+{{ if .Query.Description }}
+<p>{{ .Query.Description }}</p>
+{{ end }}
+
+<details {{ if not (or .Query.Subtitle .Query.Description) }}open{{ end }}>
+  <summary>SQL</summary>
+
+  <form action="{{ baseUrl "/" }}" method="GET">
+    <textarea name="query">{{ .Query.Query }}</textarea>
+    <div id="editor"></div>
+    <p>
+      Format:
+      {{ range .Query.Formats }}
+      <label for="{{ .Value }}">{{ .Label }}</label>
+      <input type="checkbox" name="format" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
+      {{ end }}
+    </p>
+    <p>
+      Gender:
+      {{ range .Query.Genders }}
+      <label for="{{ .Value }}">{{ .Label }}</label>
+      <input type="checkbox" name="gender" id="{{ .Value }}" value="{{ .Value }}" {{ if .Checked }}checked{{ end }}>
+      {{ end }}
+    </p>
+    <p><input type="submit" value="Run query"></p>
+  </form>
+</details>
+
+(<a href="{{ baseUrl "/help/" }}">Help</a>)
 
 {{ range .Content.LabelledResults }}
 <h2 id="{{ .Id }}">{{ .Header }} <a href="#{{ .Id }}">¶</a></h2>

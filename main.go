@@ -23,6 +23,14 @@ var (
 	templatesFS embed.FS
 )
 
+type Query struct {
+	Formats     []Checkbox
+	Genders     []Checkbox
+	Query       string
+	Subtitle    string
+	Description string
+}
+
 type Result struct {
 	Columns  []string
 	Rows     [][]any
@@ -38,6 +46,7 @@ type LabelledResult struct {
 
 type Page struct {
 	Title   string
+	Query   Query
 	Content any
 }
 
@@ -119,14 +128,14 @@ func baseUrl(url string) string {
 	}
 }
 
-func projectQuery(formats []Checkbox, genders []Checkbox, query string, limit int) (out []LabelledResult) {
-	for _, format := range formats {
-		for _, gender := range genders {
+func projectQuery(query Query, limit int) (out []LabelledResult) {
+	for _, format := range query.Formats {
+		for _, gender := range query.Genders {
 			if format.Checked && gender.Checked {
 				out = append(out, LabelledResult{
 					fmt.Sprintf("%s's %s", gender.Label, format.Label),
 					fmt.Sprintf("%s-%s", gender.Value, format.Value),
-					runQuery(addAliases(gender.Value, format.Value, query), limit),
+					runQuery(addAliases(gender.Value, format.Value, query.Query), limit),
 				})
 			}
 		}
@@ -215,28 +224,32 @@ func checkboxValues(checkboxes []Checkbox, checked []string) (out []Checkbox) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	var query Query
+	var ok bool
+
 	r.ParseForm()
 
-	query := r.FormValue("query")
-	formats := checkboxValues(formatValues, r.Form["format"])
-	genders := checkboxValues(genderValues, r.Form["gender"])
+	queryId := r.FormValue("queryId")
 
-	if query == "" {
-		query = "SELECT * FROM innings ORDER BY runs DESC LIMIT 10;"
+	if query, ok = savedQueries[queryId]; !ok {
+		query = Query{
+			Query:   r.FormValue("query"),
+			Formats: checkboxValues(formatValues, r.Form["format"]),
+			Genders: checkboxValues(genderValues, r.Form["gender"]),
+		}
+	}
+
+	if query.Query == "" {
+		query.Query = "SELECT * FROM innings ORDER BY runs DESC LIMIT 10;"
 	}
 
 	executeTemplate(w, "index.html", Page{
 		Title: "Cricket query",
+		Query: query,
 		Content: struct {
-			Query           string
 			LabelledResults []LabelledResult
-			Formats         []Checkbox
-			Genders         []Checkbox
 		}{
-			Query:           query,
-			LabelledResults: projectQuery(formats, genders, query, 100),
-			Formats:         formats,
-			Genders:         genders,
+			projectQuery(query, 100),
 		},
 	})
 }
@@ -245,9 +258,11 @@ func help(w http.ResponseWriter, r *http.Request) {
 	executeTemplate(w, "help.html", Page{
 		Title: "Cricket query help",
 		Content: struct {
-			Latest Result
+			SavedQueries map[string]Query
+			Latest       Result
 		}{
-			Latest: runQuery(`
+			savedQueries,
+			runQuery(`
 SELECT gender, format, team, opposition, ground, start_date FROM (
   SELECT * FROM (SELECT 1 AS sort, 'men' AS gender, 'test' AS format, team, opposition, ground, start_date FROM men_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
@@ -301,4 +316,52 @@ func main() {
 	http.HandleFunc(baseUrl("/help/"), help)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), logRequests(http.DefaultServeMux)))
+}
+
+var savedQueries = map[string]Query{
+	"bannerwell": Query{
+		checkboxValues(formatValues, []string{}),
+		checkboxValues(genderValues, []string{}),
+		`WITH
+teams AS (
+  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  FROM team_innings
+  GROUP BY ground, start_date, innings, team, opposition
+  -- Skip cases with multiple games between the same teams on the same day
+  HAVING COUNT(*) = 1
+),
+bannerwell AS (
+  SELECT
+    innings.ground,
+    innings.start_date,
+    innings.team,
+    innings.opposition,
+    innings.player,
+    innings.innings,
+    innings.runs AS runs,
+    teams.runs AS team_runs,
+    (CAST(innings.runs AS real) / teams.runs) AS proportion
+  FROM innings
+  INNER JOIN teams ON
+    innings.ground = teams.ground AND
+    innings.start_date = teams.start_date AND
+    innings.team = teams.team AND
+    innings.innings = teams.innings AND
+    innings.opposition = teams.opposition
+  WHERE teams.all_out = 'True'
+)
+SELECT player, team, ground, opposition, start_date, runs, team_runs, proportion
+FROM bannerwell
+WHERE runs IS NOT NULL
+ORDER BY proportion DESC
+LIMIT 10;`,
+		"Bannerwell",
+		`
+The Bannerwell (Bannerman / Bakewell) is the proportion of runs made
+in a completed team innings. In the very first men's Test innings,
+Charles Bannerman made 165 out of 245 for 67%, a record which still
+stands in men's Tests today. Enid Bakewell bettered that in a women's
+Test in 1979, with 68% of her team's score.
+`,
+	},
 }

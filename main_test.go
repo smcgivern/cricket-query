@@ -63,18 +63,18 @@ func TestProjectQuery(t *testing.T) {
 	rows[0][0] = int64(25)
 
 	cases := []struct {
-		formats  []Checkbox
-		genders  []Checkbox
-		query    string
+		query    Query
 		limit    int
 		expected []LabelledResult
 	}{
 		{
-			checkboxValues(formatValues, []string{"odi", "t20i"}),
-			checkboxValues(genderValues, []string{"men"}),
-			// Using full table names means that the projected
-			// tables don't apply.
-			"SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			Query{
+				Formats: checkboxValues(formatValues, []string{"odi", "t20i"}),
+				Genders: checkboxValues(genderValues, []string{"men"}),
+				// Using full table names means that the projected
+				// tables don't apply.
+				Query: "SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			},
 			1,
 			[]LabelledResult{
 				LabelledResult{
@@ -98,9 +98,11 @@ func TestProjectQuery(t *testing.T) {
 			},
 		},
 		{
-			checkboxValues(formatValues, []string{"test"}),
-			checkboxValues(genderValues, []string{"women"}),
-			"SELECT runs FROM innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			Query{
+				Formats: checkboxValues(formatValues, []string{"test"}),
+				Genders: checkboxValues(genderValues, []string{"women"}),
+				Query:   "SELECT runs FROM innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+			},
 			1,
 			[]LabelledResult{
 				LabelledResult{
@@ -117,15 +119,15 @@ func TestProjectQuery(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := projectQuery(c.formats, c.genders, c.query, c.limit)
+		result := projectQuery(c.query, c.limit)
 
 		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
-			t.Errorf("projectQuery(%v, %v, %q, %d) mismatch (-expected +result):\n%s", c.formats, c.genders, c.query, c.limit, diff)
+			t.Errorf("projectQuery(%v, %d) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
 		}
 
 		for _, r := range result {
-			if r.Result.Duration > 1000000 || r.Result.Duration == 0 {
-				t.Errorf("projectQuery(%v, %v, %q, %d) unexpected duration: %s", c.formats, c.genders, c.query, c.limit, r.Result.Duration)
+			if r.Result.Duration > 10000000 || r.Result.Duration == 0 {
+				t.Errorf("projectQuery(%v, %d) unexpected duration: %s", c.query, c.limit, r.Result.Duration)
 			}
 		}
 	}
@@ -173,7 +175,7 @@ func TestRunQuery(t *testing.T) {
 			t.Errorf("runQuery(%q, %d) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
 		}
 
-		if result.Duration > 1000000 || result.Duration == 0 {
+		if result.Duration > 10000000 || result.Duration == 0 {
 			t.Errorf("runQuery(%q, %d) unexpected duration: %s", c.query, c.limit, result.Duration)
 		}
 	}
