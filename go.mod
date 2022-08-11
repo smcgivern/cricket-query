@@ -3,6 +3,7 @@ module sean.mcgivern.me.uk/cricket-query
 go 1.18
 
 require (
+	github.com/google/go-cmp v0.5.3
 	github.com/jmoiron/sqlx v1.3.5
 	golang.org/x/text v0.3.3
 	modernc.org/sqlite v1.17.3

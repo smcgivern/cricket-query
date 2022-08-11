@@ -23,6 +23,7 @@
 {{ range .Content.LabelledResults }}
 <h2 id="{{ .Id }}">{{ .Header }} <a href="#{{ .Id }}">¶</a></h2>
 {{ template "_table.html" .Result }}
+<p class="muted">{{ formatDuration .Result.Duration }}</p>
 {{ end }}
 
 <style type="text/css" media="screen">

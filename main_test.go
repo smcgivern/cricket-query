@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jmoiron/sqlx"
 	"testing"
 )
@@ -10,6 +12,8 @@ func TestMain(m *testing.M) {
 	db = sqlx.MustConnect("sqlite", "testdata/innings.sqlite3")
 	m.Run()
 }
+
+var ignoreDuration = cmpopts.IgnoreFields(Result{}, "Duration")
 
 func TestFormat(t *testing.T) {
 	cases := []struct {
@@ -56,7 +60,7 @@ func TestBaseUrl(t *testing.T) {
 func TestProjectQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
-	rows[0][0] = "25"
+	rows[0][0] = int64(25)
 
 	cases := []struct {
 		formats  []Checkbox
@@ -114,8 +118,15 @@ func TestProjectQuery(t *testing.T) {
 
 	for _, c := range cases {
 		result := projectQuery(c.formats, c.genders, c.query, c.limit)
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
-			t.Errorf("projectQuery(%v, %v, %q, %d) == %v, want %v", c.formats, c.genders, c.query, c.limit, result, c.expected)
+
+		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
+			t.Errorf("projectQuery(%v, %v, %q, %d) mismatch (-expected +result):\n%s", c.formats, c.genders, c.query, c.limit, diff)
+		}
+
+		for _, r := range result {
+			if r.Result.Duration > 1000000 || r.Result.Duration == 0 {
+				t.Errorf("projectQuery(%v, %v, %q, %d) unexpected duration: %s", c.formats, c.genders, c.query, c.limit, r.Result.Duration)
+			}
 		}
 	}
 }
@@ -123,7 +134,7 @@ func TestProjectQuery(t *testing.T) {
 func TestRunQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
-	rows[0][0] = "0"
+	rows[0][0] = int64(0)
 
 	cases := []struct {
 		query    string
@@ -143,8 +154,9 @@ func TestRunQuery(t *testing.T) {
 			"SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs ASC LIMIT 1;",
 			2,
 			Result{
-				Columns: []string{"runs"},
-				Rows:    rows,
+				Columns:  []string{"runs"},
+				Rows:     rows,
+				Messages: []string{},
 			},
 		},
 		{
@@ -156,8 +168,13 @@ func TestRunQuery(t *testing.T) {
 
 	for _, c := range cases {
 		result := runQuery(c.query, c.limit)
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", c.expected) {
-			t.Errorf("runQuery(%q, %d) == %v, want %v", c.query, c.limit, result, c.expected)
+
+		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
+			t.Errorf("runQuery(%q, %d) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
+		}
+
+		if result.Duration > 1000000 || result.Duration == 0 {
+			t.Errorf("runQuery(%q, %d) unexpected duration: %s", c.query, c.limit, result.Duration)
 		}
 	}
 }

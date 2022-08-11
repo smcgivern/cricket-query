@@ -27,6 +27,7 @@ type Result struct {
 	Columns  []string
 	Rows     [][]any
 	Messages []string
+	Duration time.Duration
 }
 
 type LabelledResult struct {
@@ -138,10 +139,12 @@ func runQuery(query string, limit int) Result {
 	messages := make([]string, 0)
 	rows := make([][]any, 0)
 	i := 1
+	start := time.Now()
 
 	results, err := db.Queryx(query)
+	elapsed := time.Now().Sub(start)
 	if err != nil {
-		return Result{Messages: []string{err.Error()}}
+		return Result{Messages: []string{err.Error()}, Duration: elapsed}
 	}
 
 	columns, err := results.Columns()
@@ -168,6 +171,7 @@ func runQuery(query string, limit int) Result {
 		Columns:  columns,
 		Rows:     rows,
 		Messages: messages,
+		Duration: elapsed,
 	}
 }
 
@@ -270,6 +274,9 @@ func executeTemplate(w http.ResponseWriter, path string, page Page) {
 			Funcs(template.FuncMap{
 				"format":  format,
 				"baseUrl": baseUrl,
+				"formatDuration": func(duration time.Duration) string {
+					return fmt.Sprintf("%s", duration.Round(time.Millisecond))
+				},
 			}).
 			ParseFS(templatesFS, "template/_*.html", "template/"+path)).
 		ExecuteTemplate(w, path, page)
