@@ -216,6 +216,24 @@
   problem I can increase it.
 </p>
 
+<h3 id="result-formatting">Result formatting <a href="#result-formatting">¶</a></h3>
+
+<p>
+  In addition to the automatic formatting
+  for <a href="#date-columns">date columns</a>, numeric columns will be
+  formatted with a thousands separator, and if they contain a
+  non-integer, will be shown to two decimal places.
+</p>
+
+<p>
+  To force a result column to be displayed literally, append
+  a <code>'</code>; this will be stripped from the output and the rest
+  will be presented verbatim. For example: <code>strftime('%Y',
+  start_date)</code> will display as <code>2,001</code>, while <code>"'"
+  || strftime('%Y', start_date)</code> will display
+  as <code>2001</code>.
+</p>
+
 <h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>
 
 <p>
