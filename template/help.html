@@ -14,7 +14,7 @@
 
 <ul>
   {{ range $id, $query := .Content.SavedQueries }}
-  <li><a href="{{ baseUrl "/?queryId=" }}{{ $id }}">{{ $query.Subtitle }}</a></li>
+  <li><a href="{{ baseUrl "/?savedQuery=" }}{{ $id }}">{{ $query.Subtitle }}</a></li>
   {{ end }}
 </ul>
 

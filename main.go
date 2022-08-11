@@ -233,9 +233,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	queryId := r.FormValue("queryId")
+	savedQuery := r.FormValue("savedQuery")
 
-	if query, ok = savedQueries[queryId]; !ok {
+	if query, ok = savedQueries[savedQuery]; !ok {
 		query = Query{
 			Query:   r.FormValue("query"),
 			Formats: checkboxValues(formatValues, r.Form["format"]),
