@@ -8,8 +8,9 @@ A web interface to write SQL against Statsguru. Based on data from
 1. Clone the repo.
 2. `asdf install` (bash is also required).
 3. `make` to run tests.
-4. `make run` to run on [localhost:8080](http://localhost:8080). This
-   requires CSVs from cricketstats in `data/`.
+4. `make run` to run on
+   [localhost:8080/cricket-query](http://localhost:8080/cricket-query).
+   This requires CSVs from cricketstats in `data/`.
 
 ### Saved queries
 
