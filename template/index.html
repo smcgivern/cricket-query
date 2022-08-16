@@ -12,7 +12,7 @@
   <summary>SQL</summary>
 
   <form action="{{ baseUrl "/" }}" method="GET">
-    <textarea name="query">{{ .Query.Query }}</textarea>
+    <textarea name="sql">{{ .Query.SQL }}</textarea>
     <div id="editor"></div>
     <p>
       Format:
@@ -61,7 +61,7 @@
     showGutter: false
   });
 
-  var textarea = document.querySelector('textarea[name="query"]');
+  var textarea = document.querySelector('textarea[name="sql"]');
 
   textarea.style.display = 'none';
 

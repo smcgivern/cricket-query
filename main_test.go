@@ -76,7 +76,7 @@ func TestProjectQuery(t *testing.T) {
 				Genders: checkboxValues(genderValues, []string{"men"}),
 				// Using full table names means that the projected
 				// tables don't apply.
-				Query: "SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+				SQL: "SELECT runs FROM women_test_batting_innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
 			},
 			1,
 			[]LabelledResult{
@@ -104,7 +104,7 @@ func TestProjectQuery(t *testing.T) {
 			Query{
 				Formats: checkboxValues(formatValues, []string{"test"}),
 				Genders: checkboxValues(genderValues, []string{"women"}),
-				Query:   "SELECT runs FROM innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
+				SQL:     "SELECT runs FROM innings WHERE runs IS NOT NULL ORDER BY runs DESC LIMIT 1;",
 			},
 			1,
 			[]LabelledResult{
@@ -142,7 +142,7 @@ func TestRunQuery(t *testing.T) {
 	rows[0][0] = int64(0)
 
 	cases := []struct {
-		query    string
+		sql      string
 		limit    int
 		expected Result
 	}{
@@ -172,14 +172,14 @@ func TestRunQuery(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := runQuery(c.query, c.limit)
+		result := runQuery(c.sql, c.limit)
 
 		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
-			t.Errorf("runQuery(%q, %d) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
+			t.Errorf("runQuery(%q, %d) mismatch (-expected +result):\n%s", c.sql, c.limit, diff)
 		}
 
 		if result.Duration > 10000000 || result.Duration == 0 {
-			t.Errorf("runQuery(%q, %d) unexpected duration: %s", c.query, c.limit, result.Duration)
+			t.Errorf("runQuery(%q, %d) unexpected duration: %s", c.sql, c.limit, result.Duration)
 		}
 	}
 }
@@ -188,7 +188,7 @@ func TestAddAliases(t *testing.T) {
 	cases := []struct {
 		gender   string
 		format   string
-		query    string
+		sql      string
 		expected string
 	}{
 		{
@@ -218,8 +218,8 @@ SELECT COUNT(*) FROM foo;
 	}
 
 	for _, c := range cases {
-		if addAliases(c.gender, c.format, c.query) != c.expected {
-			t.Errorf("addAliases(%q, %q, %q) == %v, want %v", c.gender, c.format, c.query, addAliases(c.gender, c.format, c.query), c.expected)
+		if addAliases(c.gender, c.format, c.sql) != c.expected {
+			t.Errorf("addAliases(%q, %q, %q) == %v, want %v", c.gender, c.format, c.sql, addAliases(c.gender, c.format, c.sql), c.expected)
 		}
 	}
 }

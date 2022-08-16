@@ -22,7 +22,7 @@ Subtitle: "${lines[0]}",
 Description: "${lines[1]}",
 Formats: checkboxValues(formatValues, []string{${lines[2]}}),
 Genders: checkboxValues(genderValues, []string{${lines[3]}}),
-Query: \`${sql}\`,
+SQL: \`${sql}\`,
 },
 query
 

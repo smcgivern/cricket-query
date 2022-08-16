@@ -26,7 +26,7 @@ var (
 type Query struct {
 	Formats     []Checkbox
 	Genders     []Checkbox
-	Query       string
+	SQL         string
 	Subtitle    string
 	Description string
 }
@@ -139,7 +139,7 @@ func projectQuery(query Query, limit int) (out []LabelledResult) {
 				out = append(out, LabelledResult{
 					fmt.Sprintf("%s's %s", gender.Label, format.Label),
 					fmt.Sprintf("%s-%s", gender.Value, format.Value),
-					runQuery(addAliases(gender.Value, format.Value, query.Query), limit),
+					runQuery(addAliases(gender.Value, format.Value, query.SQL), limit),
 				})
 			}
 		}
@@ -148,13 +148,13 @@ func projectQuery(query Query, limit int) (out []LabelledResult) {
 	return
 }
 
-func runQuery(query string, limit int) Result {
+func runQuery(sql string, limit int) Result {
 	messages := make([]string, 0)
 	rows := make([][]any, 0)
 	i := 1
 	start := time.Now()
 
-	results, err := db.Queryx(query)
+	results, err := db.Queryx(sql)
 	elapsed := time.Now().Sub(start)
 	if err != nil {
 		return Result{Messages: []string{err.Error()}, Duration: elapsed}
@@ -188,9 +188,9 @@ func runQuery(query string, limit int) Result {
 	}
 }
 
-func addAliases(gender string, format string, query string) string {
-	if startsWithWith.Match([]byte(query)) {
-		query = startsWithWith.ReplaceAllString(query, ",")
+func addAliases(gender string, format string, sql string) string {
+	if startsWithWith.Match([]byte(sql)) {
+		sql = startsWithWith.ReplaceAllString(sql, ",")
 	}
 
 	return fmt.Sprintf(`
@@ -199,7 +199,7 @@ innings AS (SELECT * FROM %[1]s_%[2]s_batting_innings),
 bowling_innings AS (SELECT * FROM %[1]s_%[2]s_bowling_innings),
 team_innings AS (SELECT * FROM %[1]s_%[2]s_team_innings)
 %[3]s
-`, gender, format, query)
+`, gender, format, sql)
 }
 
 func inArray(needle string, haystack []string) bool {
@@ -233,18 +233,18 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	savedQuery := r.FormValue("savedQuery")
+	savedQuery := r.FormValue("query")
 
 	if query, ok = savedQueries[savedQuery]; !ok {
 		query = Query{
-			Query:   r.FormValue("query"),
+			SQL:     r.FormValue("sql"),
 			Formats: checkboxValues(formatValues, r.Form["format"]),
 			Genders: checkboxValues(genderValues, r.Form["gender"]),
 		}
 	}
 
-	if query.Query == "" {
-		query.Query = "SELECT * FROM innings ORDER BY runs DESC LIMIT 10;"
+	if query.SQL == "" {
+		query.SQL = "SELECT * FROM innings ORDER BY runs DESC LIMIT 10;"
 	}
 
 	executeTemplate(w, "index.html", Page{

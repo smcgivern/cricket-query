@@ -6,7 +6,7 @@ var savedQueries = map[string]Query{
 		Description: "The highest proportion of runs conceded by a bowler in an innings where the opposition were all out.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 teams AS (
   SELECT ground, start_date, innings, team, opposition, runs, all_out
   FROM team_innings
@@ -44,7 +44,7 @@ LIMIT 10;`,
 		Description: "Enid Bakewell and Charles Bannerman set their records while opening, which is easy mode. Which players made the biggest proportion of their team's runs from other positions?",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 teams AS (
   SELECT ground, start_date, innings, team, opposition, runs, all_out
   FROM team_innings
@@ -94,7 +94,7 @@ ORDER BY pos, rank;`,
 		Description: "The players who made the highest proportion of their team's runs in a calendar year. For Tests, this considers all runs as made on the match's start date, so won't be accurate for matches that span two calendar years.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 by_player AS (
   SELECT
     "'" || strftime('%Y', start_date) AS year,
@@ -136,7 +136,7 @@ LIMIT 10;`,
 		Description: "The Bannerwell (Bannerman / Bakewell) is the proportion of runs made in a completed team innings. In the very first men's Test innings, Charles Bannerman made 165 out of 245 for 67%, a record which still stands in men's Tests today. Enid Bakewell bettered that in a women's Test in 1979, with 68% of her team's score.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 teams AS (
   SELECT ground, start_date, innings, team, opposition, runs, all_out
   FROM team_innings
@@ -175,7 +175,7 @@ LIMIT 10;`,
 		Description: "This shows the most consecutive wins batting or fielding first by format, across all teams. For instance, if team A wins batting first, then teams B and C draw, then team A wins batting first, then team B wins batting first, that's a streak of one win, followed by no streak, followed by a streak of two wins.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH wins AS (
+		SQL: `WITH wins AS (
   SELECT
     team,
     opposition,
@@ -209,7 +209,7 @@ LIMIT 20;`,
 		Description: "Players who made it the most innings into their career with fewer than one run per innings.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 running AS (
   SELECT
     player,
@@ -230,7 +230,7 @@ LIMIT 20;`,
 		Description: "This shows the lowest average each player had at the end of any innings in their career, and ranks them by that low point.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 cumulative AS (
   SELECT
     player,
@@ -261,7 +261,7 @@ LIMIT 10;`,
 		Description: "Players with the lowest high score after N innings.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 running AS (
   SELECT
     player,
@@ -288,7 +288,7 @@ ORDER BY lowest.innings_count;`,
 		Description: "This shows the players with the highest proportion of career runs made in boundaries, where the player has made at least 500 runs in the format.",
 		Formats:     checkboxValues(formatValues, []string{}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH
+		SQL: `WITH
 averages AS (
   SELECT
     player,
@@ -315,7 +315,7 @@ LIMIT 10;`,
 		Description: "T20I bowling innings where a team bowled all 20 overs, but no individual bowler bowled more than 3 overs.",
 		Formats:     checkboxValues(formatValues, []string{"t20i"}),
 		Genders:     checkboxValues(genderValues, []string{}),
-		Query: `WITH bowling AS (
+		SQL: `WITH bowling AS (
   SELECT *, CAST(overs AS integer) AS oversn FROM bowling_innings
 )
 SELECT team, opposition, ground, start_date, MAX(oversn) AS max_overs
