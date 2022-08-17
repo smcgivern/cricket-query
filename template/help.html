@@ -27,10 +27,10 @@
 <h2 id="schema">Schema <a href="#schema">¶</a></h2>
 
 <p>
-  This is a pretty direct interface to an SQLite database. The database
-  contains a scrape of Cricinfo's Statsguru batting, bowling and team
-  tabs in the following tables, where <code>$gender</code> can
-  be <code>men</code> or <code>women</code> and <code>$format</code> can
+  This is a pretty direct interface to an SQLite database. The database contains
+  a scrape of Cricinfo's Statsguru batting, bowling and team tabs in the
+  following tables, where <code>$gender</code> can be <code>men</code>
+  or <code>women</code> and <code>$format</code> can
   be <code>test</code>, <code>odi</code>, or <code>t20i</code>.
 </p>
 
@@ -216,19 +216,17 @@
 <h3 id="result-formatting">Result formatting <a href="#result-formatting">¶</a></h3>
 
 <p>
-  In addition to the automatic formatting
-  for <a href="#date-columns">date columns</a>, numeric columns will be
-  formatted with a thousands separator, and if they contain a
-  non-integer, will be shown to two decimal places.
+  In addition to the automatic formatting for <a href="#date-columns">date
+  columns</a>, numeric columns will be formatted with a thousands separator, and
+  if they contain a non-integer, will be shown to two decimal places.
 </p>
 
 <p>
-  To force a result column to be displayed literally, append
-  a <code>'</code>; this will be stripped from the output and the rest
-  will be presented verbatim. For example: <code>strftime('%Y',
-  start_date)</code> will display as <code>2,001</code>, while <code>"'"
-  || strftime('%Y', start_date)</code> will display
-  as <code>2001</code>.
+  To force a result column to be displayed literally, append a <code>'</code>;
+  this will be stripped from the output and the rest will be presented verbatim.
+  For example: <code>strftime('%Y', start_date)</code> will display
+  as <code>2,001</code>, while <code>"'" || strftime('%Y', start_date)</code>
+  will display as <code>2001</code>.
 </p>
 
 <h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>
