@@ -6,9 +6,11 @@ A web interface to write SQL against Statsguru. Based on data from
 ## Development
 
 1. Clone the repo.
-2. `asdf install` (bash is also required).
-3. `make` to run tests.
-4. `make run` to run on
+2. `asdf plugin-add sqlite https://github.com/cLupus/asdf-sqlite.git`
+   (Bash and Make are also required)
+3. `asdf install`.
+4. `make` to run tests.
+5. `make run` to run on
    [localhost:8080/cricket-query](http://localhost:8080/cricket-query).
    This requires CSVs from cricketstats in `data/`.
 
