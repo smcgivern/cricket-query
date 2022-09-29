@@ -5,6 +5,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jmoiron/sqlx"
+	"html/template"
 	"testing"
 )
 
@@ -22,8 +23,14 @@ func TestFormat(t *testing.T) {
 	}{
 		{"C Bannerman", "C Bannerman"},
 		{"'2001", "2001"},
+		{"'<html>", "&lt;html&gt;"},
 		{"'2.001", "2.001"},
 		{"'2001-01-01", "2001-01-01"},
+		{"'p123", "p123"},
+		{"p123", `<a href="https://www.espncricinfo.com/ci/content/player/123.html">p123</a>`},
+		{"m123", `<a href="https://www.espncricinfo.com/ci/content/match/123.html">m123</a>`},
+		{"p123m", "p123m"},
+		{"p", "p"},
 		{"6996", "6,996"},
 		{"6996.01", "6,996.01"},
 		{"6996.015", "6,996.02"},
@@ -37,7 +44,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		if format(c.input) != c.expected {
+		if format(c.input) != template.HTML(c.expected) {
 			t.Errorf("format(%q) == %v, want %v", c.input, format(c.input), c.expected)
 		}
 	}

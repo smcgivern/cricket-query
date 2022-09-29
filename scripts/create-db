@@ -35,7 +35,9 @@ CREATE TABLE ${1}_batting_innings (
   innings integer,
   opposition text,
   ground text,
-  start_date date
+  start_date date,
+  player_id text,
+  match_id text
 );
 
 .import --skip 1 --csv ${target_dir}/${1}_batting.csv ${1}_batting_innings
@@ -69,7 +71,9 @@ CREATE TABLE ${1}_bowling_innings (
   innings integer,
   opposition text,
   ground text,
-  start_date date
+  start_date date,
+  player_id text,
+  match_id text
 );
 
 .import --skip 1 --csv ${target_dir}/${1}_bowling.csv ${1}_bowling_innings
@@ -102,7 +106,8 @@ CREATE TABLE ${1}_team_innings (
   innings integer,
   opposition text,
   ground text,
-  start_date date
+  start_date date,
+  match_id text
 );
 
 .import --skip 1 --csv ${target_dir}/${1}_team.csv ${1}_team_innings

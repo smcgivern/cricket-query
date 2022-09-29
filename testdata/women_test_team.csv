@@ -1,6 +1,6 @@
-,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
-0,AUS Women,47,47,49.3,6,0.94,47,True,False,lost,1,ENG Women,Brisbane,28 Dec 1934
-1,ENG Women,154,154,73.2,6,2.1,107,True,False,won,2,AUS Women,Brisbane,28 Dec 1934
-2,AUS Women,138,138,125.3,6,1.09,31,True,False,lost,3,ENG Women,Brisbane,28 Dec 1934
-3,ENG Women,34/1,34,12.5,6,2.64,3,False,False,won,4,AUS Women,Brisbane,28 Dec 1934
-4,AUS Women,162,162,121.2,6,1.33,162,True,False,lost,1,ENG Women,Sydney,4 Jan 1935
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date,match_id
+0,Australia,47,47,49.3,6,0.94,47,True,False,lost,1,England,Brisbane,1934-12-28,m67401
+1,England,154,154,73.2,6,2.1,107,True,False,won,2,Australia,Brisbane,1934-12-28,m67401
+2,Australia,138,138,125.3,6,1.09,31,True,False,lost,3,England,Brisbane,1934-12-28,m67401
+3,England,34/1,34,12.5,6,2.64,3,False,False,won,4,Australia,Brisbane,1934-12-28,m67401
+4,Australia,162,162,121.2,6,1.33,162,True,False,lost,1,England,Sydney,1935-01-04,m67402

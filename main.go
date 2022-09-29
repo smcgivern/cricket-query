@@ -71,18 +71,34 @@ var genderValues = []Checkbox{
 
 var startsWithWith = regexp.MustCompile(`(?i)\AWITH`)
 
+var matchLink = regexp.MustCompile(`\A[mp]\d+\z`)
 var matchDate = regexp.MustCompile(`\A\d{4}-\d{2}-\d{2}( 00:00:00 \+0000 UTC)?\z`)
 var matchInteger = regexp.MustCompile(`\A\d+\z`)
 var matchFloat = regexp.MustCompile(`\A\d+\.\d+\z`)
 
-func format(value any) string {
+var playerPrefix = "https://www.espncricinfo.com/ci/content/player/"
+var matchPrefix = "https://www.espncricinfo.com/ci/content/match/"
+
+func escape(s string) template.HTML {
+	return template.HTML(template.HTMLEscapeString(s))
+}
+
+func format(value any) template.HTML {
 	text := fmt.Sprint(value)
 	bytes := []byte(text)
 
 	if value == nil {
 		return ""
 	} else if strings.HasPrefix(text, "'") {
-		return strings.TrimPrefix(text, "'")
+		return escape(strings.TrimPrefix(text, "'"))
+	} else if matchLink.Match(bytes) {
+		if strings.HasPrefix(text, "p") {
+			return template.HTML(fmt.Sprintf(`<a href="%s%s.html">%s</a>`, playerPrefix, strings.TrimPrefix(text, "p"), text))
+		} else if strings.HasPrefix(text, "m") {
+			return template.HTML(fmt.Sprintf(`<a href="%s%s.html">%s</a>`, matchPrefix, strings.TrimPrefix(text, "m"), text))
+		} else {
+			return escape(text)
+		}
 	} else if matchDate.Match(bytes) {
 		t, err := time.Parse("2006-01-02 15:04:05 +0000 UTC", text)
 
@@ -90,35 +106,35 @@ func format(value any) string {
 			t, err = time.Parse("2006-01-02", text)
 
 			if err != nil {
-				return text
+				return escape(text)
 			}
 		}
 
-		return t.Format("2 January 2006")
+		return escape(t.Format("2 January 2006"))
 
 	} else if matchInteger.Match(bytes) {
 		int, err := strconv.Atoi(text)
 
 		if err != nil {
-			return text
+			return escape(text)
 		}
 
 		printer := message.NewPrinter(language.English)
 
-		return printer.Sprintf("%d", int)
+		return escape(printer.Sprintf("%d", int))
 	} else if matchFloat.Match(bytes) {
 		float, err := strconv.ParseFloat(text, 64)
 
 		if err != nil {
-			return text
+			return escape(text)
 		}
 
 		printer := message.NewPrinter(language.English)
 
-		return printer.Sprintf("%.2f", float)
+		return escape(printer.Sprintf("%.2f", float))
 	}
 
-	return text
+	return escape(text)
 }
 
 func baseUrl(url string) string {

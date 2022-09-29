@@ -1,6 +1,6 @@
-,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
-0,England,190,190,39.4,8,3.6,,True,False,lost,1,Australia,Melbourne,5 Jan 1971
-1,Australia,191/5,191,34.6,8,4.12,,False,False,won,2,England,Melbourne,5 Jan 1971
-2,Australia,222/8,222,55.0,6,4.03,,False,False,lost,1,England,Manchester,24 Aug 1972
-3,England,226/4,226,49.1,6,4.59,,False,False,won,2,Australia,Manchester,24 Aug 1972
-4,England,236/9,236,55.0,6,4.29,,False,False,lost,1,Australia,Lord's,26 Aug 1972
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date,match_id
+0,England,190,190,39.4,8,3.6,,True,False,lost,1,Australia,Melbourne,1971-01-05,m64148
+1,Australia,191/5,191,34.6,8,4.12,,False,False,won,2,England,Melbourne,1971-01-05,m64148
+2,Australia,222/8,222,55.0,6,4.03,,False,False,lost,1,England,Manchester,1972-08-24,m64944
+3,England,226/4,226,49.1,6,4.59,,False,False,won,2,Australia,Manchester,1972-08-24,m64944
+4,England,236/9,236,55.0,6,4.29,,False,False,lost,1,Australia,Lord's,1972-08-26,m64945

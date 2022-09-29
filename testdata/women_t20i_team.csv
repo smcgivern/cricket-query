@@ -1,6 +1,6 @@
-,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
-0,NZ Women,131/8,131,20.0,6,6.55,,False,False,won,1,ENG Women,Hove,5 Aug 2004
-1,ENG Women,122/7,122,20.0,6,6.1,,False,False,lost,2,NZ Women,Hove,5 Aug 2004
-2,ENG Women,151/7,151,20.0,6,7.55,,False,False,lost,1,AUS Women,Taunton,2 Sep 2005
-3,AUS Women,153/3,153,17.4,6,8.66,,False,False,won,2,ENG Women,Taunton,2 Sep 2005
-4,ENG Women,107/8,107,20.0,6,5.35,,False,False,lost,1,India Women,Derby,5 Aug 2006
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date,match_id
+0,New Zealand,131/8,131,20.0,6,6.55,,False,False,won,1,England,Hove,2004-08-05,m134990
+1,England,122/7,122,20.0,6,6.1,,False,False,lost,2,New Zealand,Hove,2004-08-05,m134990
+2,England,151/7,151,20.0,6,7.55,,False,False,lost,1,Australia,Taunton,2005-09-02,m217862
+3,Australia,153/3,153,17.4,6,8.66,,False,False,won,2,England,Taunton,2005-09-02,m217862
+4,England,107/8,107,20.0,6,5.35,,False,False,lost,1,India,Derby,2006-08-05,m225163

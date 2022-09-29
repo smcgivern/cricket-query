@@ -1,6 +1,6 @@
-,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
-0,Y. Eng Women,57,57,31.1,6,1.82,,True,False,lost,1,AUS Women,Bournemouth,23 Jun 1973
-1,AUS Women,58/3,58,21.0,6,2.76,,False,False,won,2,Y. Eng Women,Bournemouth,23 Jun 1973
-2,ENG Women,258/1,258,60.0,6,4.3,,False,False,won,1,Int XI Women,Hove,23 Jun 1973
-3,Int XI Women,123/8,123,60.0,6,2.05,,False,False,lost,2,ENG Women,Hove,23 Jun 1973
-4,NZ Women,197,197,59.5,6,3.29,,True,False,won,1,T & T Women,St Albans,23 Jun 1973
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date,match_id
+0,Young England,57,57,31.1,6,1.82,,True,False,lost,1,Australia,Bournemouth,1973-06-23,m66864
+1,Australia,58/3,58,21.0,6,2.76,,False,False,won,2,Young England,Bournemouth,1973-06-23,m66864
+2,England,258/1,258,60.0,6,4.3,,False,False,won,1,International XI,Hove,1973-06-23,m66865
+3,International XI,123/8,123,60.0,6,2.05,,False,False,lost,2,England,Hove,1973-06-23,m66865
+4,New Zealand,197,197,59.5,6,3.29,,True,False,won,1,Trinidiad and Tobago,St Albans,1973-06-23,m66868

@@ -1,6 +1,6 @@
-,player,team,overs,maidens,runs,wickets,bpo,balls,economy,pos,innings,opposition,ground,start_date
-0,T Macpherson,AUS Women,12.0,7,14,5,6,72,1.16,1,1,Y. Eng Women,Bournemouth,1973-06-23
-1,SA Tredrea,AUS Women,8.0,3,16,2,6,48,2.0,2,1,Y. Eng Women,Bournemouth,1973-06-23
-2,P May,AUS Women,7.1,2,8,2,6,43,1.11,3,1,Y. Eng Women,Bournemouth,1973-06-23
-3,W Blunsden,AUS Women,4.0,2,7,1,6,24,1.75,4,1,Y. Eng Women,Bournemouth,1973-06-23
-4,DA Gordon,AUS Women,,,,,6,,,5,1,Y. Eng Women,Bournemouth,1973-06-23
+,player,team,overs,maidens,runs,wickets,bpo,balls,economy,pos,innings,opposition,ground,start_date,player_id,match_id
+0,T Macpherson,Australia,12.0,7,14,5,6,72,1.16,1,1,Young England,Bournemouth,1973-06-23,p53532,m66864
+1,SA Tredrea,Australia,8.0,3,16,2,6,48,2.0,2,1,Young England,Bournemouth,1973-06-23,p53576,m66864
+2,P May,Australia,7.1,2,8,2,6,43,1.11,3,1,Young England,Bournemouth,1973-06-23,p53538,m66864
+3,W Blunsden,Australia,4.0,2,7,1,6,24,1.75,4,1,Young England,Bournemouth,1973-06-23,p53483,m66864
+4,DA Gordon,Australia,,,,,6,,,5,1,Young England,Bournemouth,1973-06-23,p53513,m66864

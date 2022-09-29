@@ -1,6 +1,6 @@
-,player,team,overs,maidens,runs,wickets,bpo,balls,economy,pos,innings,opposition,ground,start_date
-0,LC Pearson,ENG Women,4.0,0,23,1,6,24,5.75,1,1,NZ Women,Hove,2004-08-05
-1,JL Gunn,ENG Women,4.0,0,27,0,6,24,6.75,2,1,NZ Women,Hove,2004-08-05
-2,IT Guha,ENG Women,4.0,0,24,0,6,24,6.0,3,1,NZ Women,Hove,2004-08-05
-3,CJ Connor,ENG Women,2.0,0,20,0,6,12,10.0,4,1,NZ Women,Hove,2004-08-05
-4,RA Birch,ENG Women,4.0,0,27,4,6,24,6.75,5,1,NZ Women,Hove,2004-08-05
+,player,team,overs,maidens,runs,wickets,bpo,balls,economy,pos,innings,opposition,ground,start_date,player_id,match_id
+0,LC Pearson,England,4.0,0,23,1,6,24,5.75,1,1,New Zealand,Hove,2004-08-05,p53704,m134990
+1,JL Gunn,England,4.0,0,27,0,6,24,6.75,2,1,New Zealand,Hove,2004-08-05,p53800,m134990
+2,IT Guha,England,4.0,0,24,0,6,24,6.0,3,1,New Zealand,Hove,2004-08-05,p53726,m134990
+3,CJ Connor,England,2.0,0,20,0,6,12,10.0,4,1,New Zealand,Hove,2004-08-05,p53693,m134990
+4,RA Birch,England,4.0,0,27,4,6,24,6.75,5,1,New Zealand,Hove,2004-08-05,p53895,m134990

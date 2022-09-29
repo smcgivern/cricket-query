@@ -1,6 +1,6 @@
-,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date
-0,Australia,214/5,214,20.0,6,10.7,,False,False,won,1,New Zealand,Auckland,17 Feb 2005
-1,New Zealand,170,170,20.0,6,8.5,,True,False,lost,2,Australia,Auckland,17 Feb 2005
-2,England,179/8,179,20.0,6,8.95,,False,False,won,1,Australia,Southampton,13 Jun 2005
-3,Australia,79,79,14.3,6,5.44,,True,False,lost,2,England,Southampton,13 Jun 2005
-4,South Africa,133,133,19.3,6,6.82,,True,False,lost,1,New Zealand,Johannesburg,21 Oct 2005
+,team,score,runs,overs,bpo,rpo,lead,all_out,declared,result,innings,opposition,ground,start_date,match_id
+0,Australia,214/5,214,20.0,6,10.7,,False,False,won,1,New Zealand,Auckland,2005-02-17,m211048
+1,New Zealand,170,170,20.0,6,8.5,,True,False,lost,2,Australia,Auckland,2005-02-17,m211048
+2,England,179/8,179,20.0,6,8.95,,False,False,won,1,Australia,Southampton,2005-06-13,m211028
+3,Australia,79,79,14.3,6,5.44,,True,False,lost,2,England,Southampton,2005-06-13,m211028
+4,South Africa,133,133,19.3,6,6.82,,True,False,lost,1,New Zealand,Johannesburg,2005-10-21,m222678

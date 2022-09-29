@@ -1,6 +1,6 @@
-,player,team,runs,runs_txt,not_out,mins,bf,4s,6s,sr,pos,innings,opposition,ground,start_date
-0,AC Gilchrist,Australia,1,1,False,7,3,0,0,33.33,1,1,New Zealand,Auckland,2005-02-17
-1,MJ Clarke,Australia,7,7,False,4,4,0,1,175.0,2,1,New Zealand,Auckland,2005-02-17
-2,A Symonds,Australia,32,32,False,12,13,4,2,246.15,3,1,New Zealand,Auckland,2005-02-17
-3,RT Ponting,Australia,98,98*,True,62,55,8,5,178.18,4,1,New Zealand,Auckland,2005-02-17
-4,DR Martyn,Australia,3,3,False,4,5,0,0,60.0,5,1,New Zealand,Auckland,2005-02-17
+,player,team,runs,runs_txt,not_out,mins,bf,4s,6s,sr,pos,innings,opposition,ground,start_date,player_id,match_id
+0,AC Gilchrist,Australia,1.0,1,False,7,3,0,0,33.33,1,1,New Zealand,Auckland,2005-02-17,p5390,m211048
+1,MJ Clarke,Australia,7.0,7,False,4,4,0,1,175.0,2,1,New Zealand,Auckland,2005-02-17,p4578,m211048
+2,A Symonds,Australia,32.0,32,False,12,13,4,2,246.15,3,1,New Zealand,Auckland,2005-02-17,p7702,m211048
+3,RT Ponting,Australia,98.0,98*,True,62,55,8,5,178.18,4,1,New Zealand,Auckland,2005-02-17,p7133,m211048
+4,DR Martyn,Australia,3.0,3,False,4,5,0,0,60.0,5,1,New Zealand,Auckland,2005-02-17,p6513,m211048

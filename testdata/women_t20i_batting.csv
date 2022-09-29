@@ -1,6 +1,6 @@
-,player,team,runs,runs_txt,not_out,mins,bf,4s,6s,sr,pos,innings,opposition,ground,start_date
-0,RJ Rolls,NZ Women,39,39,False,46,32,3,0,121.87,1,1,ENG Women,Hove,2004-08-05
-1,PB Flannery,NZ Women,18,18,False,14,16,3,0,112.5,2,1,ENG Women,Hove,2004-08-05
-2,MAM Lewis,NZ Women,25,25,False,23,29,3,0,86.2,3,1,ENG Women,Hove,2004-08-05
-3,HM Tiffen,NZ Women,18,18,False,13,14,2,0,128.57,4,1,ENG Women,Hove,2004-08-05
-4,NJ Browne,NZ Women,3,3,False,4,3,0,0,100.0,5,1,ENG Women,Hove,2004-08-05
+,player,team,runs,runs_txt,not_out,mins,bf,4s,6s,sr,pos,innings,opposition,ground,start_date,player_id,match_id
+0,RJ Rolls,New Zealand,39.0,39,False,46,32,3,0,121.87,1,1,England,Hove,2004-08-05,p54323,m134990
+1,PB Flannery,New Zealand,18.0,18,False,14,16,3,0,112.5,2,1,England,Hove,2004-08-05,p54292,m134990
+2,MAM Lewis,New Zealand,25.0,25,False,23,29,3,0,86.2,3,1,England,Hove,2004-08-05,p54304,m134990
+3,HM Tiffen,New Zealand,18.0,18,False,13,14,2,0,128.57,4,1,England,Hove,2004-08-05,p54325,m134990
+4,NJ Browne,New Zealand,3.0,3,False,4,3,0,0,100.0,5,1,England,Hove,2004-08-05,p54504,m134990
