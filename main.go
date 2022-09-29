@@ -283,18 +283,18 @@ func help(w http.ResponseWriter, r *http.Request) {
 		}{
 			savedQueries,
 			runQuery(`
-SELECT gender, format, team, opposition, ground, start_date FROM (
-  SELECT * FROM (SELECT 1 AS sort, 'men' AS gender, 'test' AS format, team, opposition, ground, start_date FROM men_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+SELECT gender, format, team, opposition, ground, start_date, match_id FROM (
+  SELECT * FROM (SELECT 1 AS sort, 'men' AS gender, 'test' AS format, team, opposition, ground, start_date, match_id FROM men_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
-  SELECT * FROM (SELECT 2 AS sort, 'women' AS gender, 'test' AS format, team, opposition, ground, start_date FROM women_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+  SELECT * FROM (SELECT 2 AS sort, 'women' AS gender, 'test' AS format, team, opposition, ground, start_date, match_id FROM women_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
-  SELECT * FROM (SELECT 3 AS sort, 'men' AS gender, 'odi' AS format, team, opposition, ground, start_date FROM men_odi_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+  SELECT * FROM (SELECT 3 AS sort, 'men' AS gender, 'odi' AS format, team, opposition, ground, start_date, match_id FROM men_odi_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
-  SELECT * FROM (SELECT 4 AS sort, 'women' AS gender, 'odi' AS format, team, opposition, ground, start_date FROM women_odi_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+  SELECT * FROM (SELECT 4 AS sort, 'women' AS gender, 'odi' AS format, team, opposition, ground, start_date, match_id FROM women_odi_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
-  SELECT * FROM (SELECT 5 AS sort, 'men' AS gender, 't20i' AS format, team, opposition, ground, start_date FROM men_t20i_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+  SELECT * FROM (SELECT 5 AS sort, 'men' AS gender, 't20i' AS format, team, opposition, ground, start_date, match_id FROM men_t20i_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
-  SELECT * FROM (SELECT 6 AS sort, 'women' AS gender, 't20i' AS format, team, opposition, ground, start_date FROM women_t20i_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
+  SELECT * FROM (SELECT 6 AS sort, 'women' AS gender, 't20i' AS format, team, opposition, ground, start_date, match_id FROM women_t20i_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
 ) ORDER BY sort ASC;`,
 				10,
 			),

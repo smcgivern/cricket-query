@@ -8,33 +8,31 @@ var savedQueries = map[string]Query{
 		Genders:     checkboxValues(genderValues, []string{}),
 		SQL: `WITH
 teams AS (
-  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  SELECT match_id, innings, team, opposition, runs, all_out
   FROM team_innings
-  GROUP BY ground, start_date, innings, team, opposition
-  -- Skip cases with multiple games between the same teams on the same day
-  HAVING COUNT(*) = 1
+  GROUP BY match_id, innings, team, opposition
 ),
 bowling_bannerwell AS (
   SELECT
     teams.team AS batting_team,
     teams.opposition AS bowling_team,
-    teams.ground,
-    teams.start_date,
+    bowling_innings.ground,
+    bowling_innings.start_date,
     teams.innings,
     teams.runs AS team_total,
     bowling_innings.player,
     bowling_innings.runs AS runs_conceded,
-    (CAST(bowling_innings.runs AS real) / teams.runs) AS proportion
+    (CAST(bowling_innings.runs AS real) / teams.runs) AS proportion,
+    bowling_innings.match_id AS match_id
   FROM bowling_innings
   INNER JOIN teams ON
-    bowling_innings.ground = teams.ground AND
-    bowling_innings.start_date = teams.start_date AND
+    bowling_innings.match_id = teams.match_id AND
     bowling_innings.team = teams.opposition AND
     bowling_innings.innings = teams.innings
   WHERE bowling_innings.runs IS NOT NULL AND
     teams.all_out = 'True'
 )
-SELECT batting_team, bowling_team, ground, start_date, innings, team_total, player, runs_conceded, proportion
+SELECT batting_team, bowling_team, ground, start_date, innings, team_total, player, runs_conceded, proportion, match_id
 FROM bowling_bannerwell
 ORDER BY proportion DESC
 LIMIT 10;`,
@@ -46,11 +44,9 @@ LIMIT 10;`,
 		Genders:     checkboxValues(genderValues, []string{}),
 		SQL: `WITH
 teams AS (
-  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  SELECT match_id, innings, runs, all_out
   FROM team_innings
-  GROUP BY ground, start_date, innings, team, opposition
-  -- Skip cases with multiple games between the same teams on the same day
-  HAVING COUNT(*) = 1
+  GROUP BY match_id, innings
 ),
 bannerwell_by_position AS (
   SELECT
@@ -62,13 +58,11 @@ bannerwell_by_position AS (
     innings.innings,
     innings.runs AS runs,
     teams.runs AS team_runs,
-    CAST(innings.runs AS real) / teams.runs AS proportion
+    CAST(innings.runs AS real) / teams.runs AS proportion,
+    innings.match_id AS match_id
   FROM innings
   INNER JOIN teams ON
-    innings.ground = teams.ground AND
-    innings.start_date = teams.start_date AND
-    innings.team = teams.team AND
-    innings.opposition = teams.opposition AND
+    innings.match_id = teams.match_id AND
     innings.innings = teams.innings
   WHERE teams.all_out = 'True'
 )
@@ -82,7 +76,8 @@ FROM (
     start_date,
     runs,
     team_runs,
-    proportion
+    proportion,
+    match_id
   FROM bannerwell_by_position
   WHERE runs IS NOT NULL
 ) ranked
@@ -138,11 +133,9 @@ LIMIT 10;`,
 		Genders:     checkboxValues(genderValues, []string{}),
 		SQL: `WITH
 teams AS (
-  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  SELECT match_id, innings, runs, all_out
   FROM team_innings
-  GROUP BY ground, start_date, innings, team, opposition
-  -- Skip cases with multiple games between the same teams on the same day
-  HAVING COUNT(*) = 1
+  GROUP BY match_id, innings
 ),
 bannerwell AS (
   SELECT
@@ -154,17 +147,15 @@ bannerwell AS (
     innings.innings,
     innings.runs AS runs,
     teams.runs AS team_runs,
-    (CAST(innings.runs AS real) / teams.runs) AS proportion
+    (CAST(innings.runs AS real) / teams.runs) AS proportion,
+    innings.match_id AS match_id
   FROM innings
   INNER JOIN teams ON
-    innings.ground = teams.ground AND
-    innings.start_date = teams.start_date AND
-    innings.team = teams.team AND
-    innings.innings = teams.innings AND
-    innings.opposition = teams.opposition
+    innings.match_id = teams.match_id AND
+    innings.innings = teams.innings
   WHERE teams.all_out = 'True'
 )
-SELECT player, team, ground, opposition, start_date, runs, team_runs, proportion
+SELECT player, team, ground, opposition, start_date, runs, team_runs, proportion, match_id
 FROM bannerwell
 WHERE runs IS NOT NULL
 ORDER BY proportion DESC

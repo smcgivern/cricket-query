@@ -28,7 +28,8 @@
 <p>
   Other sections on this page
   are <a href="#schema">schema</a>, <a href="#annoyances">annoyances</a>,
-  and <a href="#latest-data">latest data</a>.
+  <a href="#result-formatting">result formatting</a>, and
+  <a href="#latest-data">latest data</a>.
 </p>
 
 <h2 id="schema">Schema <a href="#schema">¶</a></h2>
@@ -92,6 +93,8 @@
     <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+    <tr><td><code>player_id</code></td> <td>text</td> <td>See <a href="#id-columns">ID columns</a></td></tr>
+    <tr><td><code>match_id</code></td> <td>text</td> <td>See <a href="#id-columns">ID columns</a></td></tr>
   </tbody>
 </table>
 
@@ -117,6 +120,8 @@
     <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+    <tr><td><code>player_id</code></td> <td>text</td> <td>See <a href="#id-columns">ID columns</a></td></tr>
+    <tr><td><code>match_id</code></td> <td>text</td> <td>See <a href="#id-columns">ID columns</a></td></tr>
   </tbody>
 </table>
 
@@ -142,6 +147,7 @@
     <tr><td><code>opposition</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>ground</code></td> <td>text</td> <td></td></tr>
     <tr><td><code>start_date</code></td> <td>date</td> <td>See <a href="#date-columns">date columns</a></td></tr>
+    <tr><td><code>match_id</code></td> <td>text</td> <td>See <a href="#id-columns">ID columns</a></td></tr>
   </tbody>
 </table>
 
@@ -174,54 +180,6 @@
   find matches on that date, we can use <code>start_date = '2021-06-02'</code>.
 </p>
 
-<h3 id="players-with-the-same-name">Players with the same name <a href="#players-with-the-same-name">¶</a></h3>
-
-<p>
-  Players do not have a unique identifier beyond their name. For most players
-  this is OK as their names are unique in their field, at least when combined
-  with the team they play for. However, there are some who are not unique even
-  with that qualifier. For instance, there are two JP Duminys who played for
-  South
-  Africa: <a href="https://www.espncricinfo.com/player/jacobus-duminy-44731">Jacobus
-  Petrus Duminy</a>
-  and <a href="https://www.espncricinfo.com/player/jean-paul-duminy-44932">Jean-Paul
-  Duminy</a>.
-</p>
-
-<p>
-  Often these players can be further disambiguated by also grabbing their debut
-  (<code>MIN(start_date)</code>), but it's not particularly convenient.
-</p>
-
-<p>
-  This is tracked in the
-  issue <a href="https://github.com/smcgivern/cricket-query/issues/1">smcgivern/cricket-query#1</a>.
-</p>
-
-<h3 id="games-on-the-same-day">Games on the same day <a href="#games-on-the-same-day">¶</a></h3>
-
-<p>
-  There has never been an instance of two Tests being played between the same
-  two teams on the same day. This has happened quite a few times in T20Is,
-  though. For instance, on 11 June 2022, Belgium played Malta twice at Gent,
-  batting first and winning both times:
-  by <a href="https://www.espncricinfo.com/series/malta-in-belgium-2022-1318294/belgium-vs-malta-1st-t20i-1318354/full-scorecard">111
-  runs</a>
-  and <a href="https://www.espncricinfo.com/series/malta-in-belgium-2022-1318294/belgium-vs-malta-2nd-t20i-1318355/full-scorecard">84
-  runs</a>. The toss was different in these two games, but this database does
-  not contain the toss result, or the match ID.
-</p>
-
-<p>
-  For this case, I do not have a good suggestion to disambiguate, other than to
-  sanity check results in obscure T20Is that seem extreme.
-</p>
-
-<p>
-  This is tracked in the
-  issue <a href="https://github.com/smcgivern/cricket-query/issues/2">smcgivern/cricket-query#2</a>.
-</p>
-
 <h3 id="results-limit">Results limit <a href="#results-limit">¶</a></h3>
 
 <p>
@@ -230,12 +188,29 @@
   problem I can increase it.
 </p>
 
-<h3 id="result-formatting">Result formatting <a href="#result-formatting">¶</a></h3>
+<h2 id="result-formatting">Result formatting <a href="#result-formatting">¶</a></h2>
+
+<h3 id="id-columns">ID columns <a href="#id-columns">¶</a></h3>
+
+<p>
+  Player and match ID columns have special behaviour. A player ID
+  is <code>p</code> followed by digits (with no other characters in the string),
+  and a match ID is the same but with an <code>m</code> prefix.
+</p>
+
+<p>
+  When a player or match ID is detected (either from the original value, or
+  constructed if you really want to), it will be linked to the relevant Cricinfo
+  player profile or scorecard page.
+</p>
+
+<h3 id="other-result-formatting">Other result formatting <a href="#other-result-formatting">¶</a></h3>
 
 <p>
   In addition to the automatic formatting for <a href="#date-columns">date
-  columns</a>, numeric columns will be formatted with a thousands separator, and
-  if they contain a non-integer, will be shown to two decimal places.
+  columns</a> and <a href="#id-columns">ID columns</a>, numeric columns will be
+  formatted with a thousands separator, and if they contain a non-integer, will
+  be shown to two decimal places.
 </p>
 
 <p>
@@ -244,21 +219,6 @@
   For example: <code>strftime('%Y', start_date)</code> will display
   as <code>2,001</code>, while <code>"'" || strftime('%Y', start_date)</code>
   will display as <code>2001</code>.
-</p>
-
-<h3 id="inconsistent-team-names">Inconsistent team names <a href="#inconsistent-team-names">¶</a></h3>
-
-<p>
-  The team name columns (<code>team</code> and <code>opposition</code>) are
-  internally consistent - they always have the same values for the same teams -
-  but they are inconsistent globally. For instance, we have 'Pakistan' (men),
-  'PAK Women', 'Australia' (men), 'AUS Women', but then 'India' (men) and 'India
-  Women'.
-</p>
-
-<p>
-  This is tracked in the
-  issue <a href="https://github.com/smcgivern/cricket-query/issues/3">smcgivern/cricket-query#3</a>.
 </p>
 
 <h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>

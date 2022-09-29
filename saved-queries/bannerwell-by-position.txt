@@ -4,11 +4,9 @@ Enid Bakewell and Charles Bannerman set their records while opening, which is ea
 
 WITH
 teams AS (
-  SELECT ground, start_date, innings, team, opposition, runs, all_out
+  SELECT match_id, innings, runs, all_out
   FROM team_innings
-  GROUP BY ground, start_date, innings, team, opposition
-  -- Skip cases with multiple games between the same teams on the same day
-  HAVING COUNT(*) = 1
+  GROUP BY match_id, innings
 ),
 bannerwell_by_position AS (
   SELECT
@@ -20,13 +18,11 @@ bannerwell_by_position AS (
     innings.innings,
     innings.runs AS runs,
     teams.runs AS team_runs,
-    CAST(innings.runs AS real) / teams.runs AS proportion
+    CAST(innings.runs AS real) / teams.runs AS proportion,
+    innings.match_id AS match_id
   FROM innings
   INNER JOIN teams ON
-    innings.ground = teams.ground AND
-    innings.start_date = teams.start_date AND
-    innings.team = teams.team AND
-    innings.opposition = teams.opposition AND
+    innings.match_id = teams.match_id AND
     innings.innings = teams.innings
   WHERE teams.all_out = 'True'
 )
@@ -40,7 +36,8 @@ FROM (
     start_date,
     runs,
     team_runs,
-    proportion
+    proportion,
+    match_id
   FROM bannerwell_by_position
   WHERE runs IS NOT NULL
 ) ranked
