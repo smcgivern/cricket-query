@@ -214,17 +214,18 @@
 </p>
 
 <p>
-  To force a result column to be displayed literally, append a <code>'</code>;
-  this will be stripped from the output and the rest will be presented verbatim.
-  For example: <code>strftime('%Y', start_date)</code> will display
-  as <code>2,001</code>, while <code>"'" || strftime('%Y', start_date)</code>
-  will display as <code>2001</code>.
+  To force a result column to be displayed literally, prepend an apostrophe
+  - <code>'</code> - this will be stripped from the output and the rest will be
+  presented verbatim. For example: <code>strftime('%Y', start_date)</code> will
+  display as <code>2,001</code>, while <code>"'" || strftime('%Y',
+  start_date)</code> will display as <code>2001</code>.
 </p>
 
 <h2 id="latest-data">Latest data <a href="#latest-data">¶</a></h2>
 
 <p>
-  The database is updated semi-regularly. The latest match for each format is:
+  The database is updated daily, although there will be a delay when new teams
+  play their first international match. The latest match for each format is:
 </p>
 
 {{ template "_table.html" .Content.Latest }}
