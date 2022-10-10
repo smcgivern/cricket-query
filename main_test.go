@@ -1,13 +1,30 @@
 package main
 
 import (
+	"context"
+	"database/sql/driver"
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jmoiron/sqlx"
 	"html/template"
 	"testing"
+	"time"
+
+	sqlite3 "modernc.org/sqlite"
 )
+
+func init() {
+	sqlite3.MustRegisterScalarFunction(
+		"test_sleep_150",
+		0,
+		func(ctx *sqlite3.FunctionContext, args []driver.Value) (driver.Value, error) {
+			time.Sleep(150 * time.Millisecond)
+
+			return int64(1), nil
+		},
+	)
+}
 
 func TestMain(m *testing.M) {
 	db = sqlx.MustConnect("sqlite", "testdata/innings.sqlite3")
@@ -71,6 +88,7 @@ func TestProjectQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
 	rows[0][0] = int64(25)
+	ctx := context.Background()
 
 	cases := []struct {
 		query    Query
@@ -129,15 +147,15 @@ func TestProjectQuery(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := projectQuery(c.query, c.limit)
+		result := projectQuery(ctx, c.query, c.limit, 100)
 
 		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
-			t.Errorf("projectQuery(%v, %d) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
+			t.Errorf("projectQuery(ctx, %v, %d, 100) mismatch (-expected +result):\n%s", c.query, c.limit, diff)
 		}
 
 		for _, r := range result {
-			if r.Result.Duration > 10000000 || r.Result.Duration == 0 {
-				t.Errorf("projectQuery(%v, %d) unexpected duration: %s", c.query, c.limit, r.Result.Duration)
+			if r.Result.Duration > 100000000 || r.Result.Duration == 0 {
+				t.Errorf("projectQuery(ctx, %v, %d, 100) unexpected duration: %s", c.query, c.limit, r.Result.Duration)
 			}
 		}
 	}
@@ -147,6 +165,7 @@ func TestRunQuery(t *testing.T) {
 	rows := make([][]interface{}, 1)
 	rows[0] = make([]interface{}, 1)
 	rows[0][0] = int64(0)
+	ctx := context.Background()
 
 	cases := []struct {
 		sql      string
@@ -176,17 +195,29 @@ func TestRunQuery(t *testing.T) {
 			1,
 			Result{Messages: []string{"attempt to write a readonly database (8)"}},
 		},
+		{
+			// https://dba.stackexchange.com/a/203607
+			"WITH RECURSIVE r(i) AS (VALUES(0) UNION ALL SELECT i FROM r LIMIT 10000000) SELECT i FROM r WHERE i = 1;",
+			1,
+			Result{Messages: []string{"interrupted (9)"}},
+		},
+		{
+			"SELECT test_sleep_150();",
+			1,
+			Result{Messages: []string{"context deadline exceeded"}},
+		},
 	}
 
 	for _, c := range cases {
-		result := runQuery(c.sql, c.limit)
+		result := runQuery(ctx, c.sql, c.limit, 100)
 
 		if diff := cmp.Diff(c.expected, result, ignoreDuration); diff != "" {
-			t.Errorf("runQuery(%q, %d) mismatch (-expected +result):\n%s", c.sql, c.limit, diff)
+			t.Errorf("runQuery(ctx, %q, %d, 100) mismatch (-expected +result):\n%s", c.sql, c.limit, diff)
 		}
 
-		if result.Duration > 10000000 || result.Duration == 0 {
-			t.Errorf("runQuery(%q, %d) unexpected duration: %s", c.sql, c.limit, result.Duration)
+		// Add padding for timeout tests
+		if result.Duration > 200000000 || result.Duration == 0 {
+			t.Errorf("runQuery(ctx, %q, %d, 100) unexpected duration: %v", c.sql, c.limit, result.Duration)
 		}
 	}
 }

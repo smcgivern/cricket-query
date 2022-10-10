@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -57,6 +58,7 @@ type Checkbox struct {
 }
 
 var rowsLimit = 100
+var defaultTimeout = 5000
 
 var formatValues = []Checkbox{
 	Checkbox{"Test", "test", false},
@@ -148,14 +150,14 @@ func baseUrl(url string) string {
 	}
 }
 
-func projectQuery(query Query, limit int) (out []LabelledResult) {
+func projectQuery(ctx context.Context, query Query, limit int, timeout int) (out []LabelledResult) {
 	for _, format := range query.Formats {
 		for _, gender := range query.Genders {
 			if format.Checked && gender.Checked {
 				out = append(out, LabelledResult{
 					fmt.Sprintf("%s's %s", gender.Label, format.Label),
 					fmt.Sprintf("%s-%s", gender.Value, format.Value),
-					runQuery(addAliases(gender.Value, format.Value, query.SQL), limit),
+					runQuery(ctx, addAliases(gender.Value, format.Value, query.SQL), limit, timeout),
 				})
 			}
 		}
@@ -164,14 +166,21 @@ func projectQuery(query Query, limit int) (out []LabelledResult) {
 	return
 }
 
-func runQuery(sql string, limit int) Result {
+func runQuery(ctx context.Context, sql string, limit int, timeout int) Result {
 	messages := make([]string, 0)
 	rows := make([][]any, 0)
 	i := 1
 	start := time.Now()
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Millisecond)
+	defer cancel()
 
-	results, err := db.Queryx(sql)
+	results, err := db.QueryxContext(ctx, sql)
 	elapsed := time.Now().Sub(start)
+
+	if err == nil {
+		err = ctx.Err()
+	}
+
 	if err != nil {
 		return Result{Messages: []string{err.Error()}, Duration: elapsed}
 	}
@@ -269,7 +278,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		Content: struct {
 			LabelledResults []LabelledResult
 		}{
-			projectQuery(query, rowsLimit),
+			projectQuery(r.Context(), query, rowsLimit, defaultTimeout),
 		},
 	})
 }
@@ -282,7 +291,9 @@ func help(w http.ResponseWriter, r *http.Request) {
 			Latest       Result
 		}{
 			savedQueries,
-			runQuery(`
+			runQuery(
+				r.Context(),
+				`
 SELECT gender, format, team, opposition, ground, start_date, match_id FROM (
   SELECT * FROM (SELECT 1 AS sort, 'men' AS gender, 'test' AS format, team, opposition, ground, start_date, match_id FROM men_test_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
   UNION
@@ -297,6 +308,7 @@ SELECT gender, format, team, opposition, ground, start_date, match_id FROM (
   SELECT * FROM (SELECT 6 AS sort, 'women' AS gender, 't20i' AS format, team, opposition, ground, start_date, match_id FROM women_t20i_team_innings ORDER BY start_date DESC, i DESC LIMIT 1)
 ) ORDER BY sort ASC;`,
 				10,
+				defaultTimeout,
 			),
 		},
 	})
