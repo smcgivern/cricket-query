@@ -203,12 +203,13 @@ LIMIT 20;`,
 		SQL: `WITH
 running AS (
   SELECT
+    player_id,
     player,
-    SUM(runs) OVER (PARTITION BY player ORDER BY start_date, innings) AS cumulative_runs,
-    COUNT(*) OVER (PARTITION BY player ORDER BY start_date, innings) - 1 AS innings_count
+    SUM(runs) OVER (PARTITION BY player_id ORDER BY start_date, innings) AS cumulative_runs,
+    COUNT(*) OVER (PARTITION BY player_id ORDER BY start_date, innings) - 1 AS innings_count
   FROM innings
   WHERE runs IS NOT NULL
-  ORDER BY player, start_date, innings
+  ORDER BY player_id, start_date, innings
 )
 SELECT *
 FROM running
