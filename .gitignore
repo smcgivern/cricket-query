@@ -1,3 +1,4 @@
+.direnv
 data
 release
 testdata/innings.sqlite3
