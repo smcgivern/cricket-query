@@ -6,8 +6,13 @@ test: fmt testdata/innings.sqlite3 saved_queries.go
 release: release/data/innings.sqlite3 release/cricket-query
 
 .PHONY: clean
-clean:
+clean: clean-db clean-binary
+
+.PHONY: clean-db
 	rm -f release/data/innings.sqlite3
+
+.PHONY: clean-binary
+clean-binary:
 	rm release/cricket-query
 
 .PHONY: run
