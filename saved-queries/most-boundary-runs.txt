@@ -7,7 +7,7 @@ averages AS (
   SELECT
     player,
     SUM(runs) AS total_runs,
-    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out THEN 0 ELSE 1 END) AS average,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS average,
     SUM(fours) AS fours,
     SUM(sixes) AS sixes,
     (
