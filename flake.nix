@@ -10,7 +10,7 @@
     let pkgs = import nixpkgs { inherit system; };
     in {
       devShells.default = pkgs.mkShellNoCC {
-        buildInputs = with pkgs; [ go_1_19 sqlite ];
+        buildInputs = with pkgs; [ go_1_19 sqlite-interactive ];
       };
     }
   );
