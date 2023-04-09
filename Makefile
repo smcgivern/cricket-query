@@ -9,11 +9,12 @@ release: release/data/innings.sqlite3 release/cricket-query
 clean: clean-db clean-binary
 
 .PHONY: clean-db
+clean-db:
 	rm -f release/data/innings.sqlite3
 
 .PHONY: clean-binary
 clean-binary:
-	rm release/cricket-query
+	rm -f release/cricket-query
 
 .PHONY: run
 run: fmt data/innings.sqlite3 saved_queries.go
@@ -30,6 +31,7 @@ data/innings.sqlite3: data/*.csv scripts/create-db
 	scripts/create-db data
 
 release/data/innings.sqlite3: data/innings.sqlite3
+	make clean-db
 	mkdir -p release/data
 	cp data/innings.sqlite3 release/data
 
