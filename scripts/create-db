@@ -49,6 +49,8 @@ SET
   bf = CASE WHEN bf = "" THEN NULL ELSE bf END,
   fours = CASE WHEN fours = "" THEN NULL ELSE fours END,
   sixes = CASE WHEN sixes = "" THEN NULL ELSE sixes END;
+
+CREATE INDEX ${1}_batting_innings_match_id ON ${1}_batting_innings (match_id);
 COMMANDS
 }
 
@@ -84,6 +86,8 @@ SET
   runs = CASE WHEN runs = "" THEN NULL ELSE runs END,
   wickets = CASE WHEN wickets = "" THEN NULL ELSE wickets END,
   balls = CASE WHEN balls = "" THEN NULL ELSE balls END;
+
+CREATE INDEX ${1}_bowling_innings_match_id ON ${1}_bowling_innings (match_id);
 COMMANDS
 }
 
@@ -117,6 +121,8 @@ SET
   runs = CASE WHEN runs = "" THEN NULL ELSE runs END,
   overs = CASE WHEN overs = "" THEN NULL ELSE overs END,
   lead = CASE WHEN lead = "" THEN NULL ELSE lead END;
+
+CREATE INDEX ${1}_team_innings_match_id ON ${1}_team_innings (match_id);
 COMMANDS
 }
 
