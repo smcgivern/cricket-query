@@ -1,0 +1,21 @@
+Median higher than average
+A player's median innings is the score that they exceed half the time, and fail to reach half the time. Because low scores are so common in cricket, having a median score above the average (mean) score is very rare. This shows the players who made it the most runs into their career with the median above the average
+
+
+WITH running AS (
+  SELECT
+    player_id,
+    player,
+    COUNT(*) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS innings,
+    median(runs) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS median,
+    SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS outs,
+    SUM(runs) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS total
+  FROM innings
+  WHERE runs IS NOT NULL
+  ORDER BY player_id, start_date, innings
+)
+SELECT player_id, player, innings, median, CAST(total AS real) / outs AS average, total
+FROM running
+WHERE median > average
+ORDER BY total DESC
+LIMIT 10;

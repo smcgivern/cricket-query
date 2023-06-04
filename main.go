@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql/driver"
 	"embed"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -9,10 +10,11 @@ import (
 	"golang.org/x/text/message"
 	"html/template"
 	"log"
-	_ "modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite"
 	"net/http"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -80,6 +82,58 @@ var matchFloat = regexp.MustCompile(`\A\d+\.\d+\z`)
 
 var playerPrefix = "https://www.espncricinfo.com/ci/content/player/"
 var matchPrefix = "https://www.espncricinfo.com/ci/content/match/"
+
+type medianFunction struct {
+	vals []float64
+}
+
+func (f *medianFunction) Step(ctx *sqlite3.FunctionContext, args []driver.Value) error {
+	switch resTyped := args[0].(type) {
+	case int64:
+		f.vals = append(f.vals, float64(resTyped))
+	case float64:
+		f.vals = append(f.vals, resTyped)
+	case nil:
+	default:
+		return fmt.Errorf("value is not a number: %T", resTyped)
+	}
+	return nil
+}
+
+func (f *medianFunction) WindowInverse(ctx *sqlite3.FunctionContext, args []driver.Value) error {
+	first, rest := f.vals[0], f.vals[1:]
+
+	switch resTyped := args[0].(type) {
+	case int64:
+		if first == float64(resTyped) {
+			f.vals = rest
+		}
+	case float64:
+		if first == resTyped {
+			f.vals = rest
+		}
+	case nil:
+	default:
+		return fmt.Errorf("value is not a number: %T", resTyped)
+	}
+	return nil
+}
+
+func (f *medianFunction) WindowValue(ctx *sqlite3.FunctionContext) (driver.Value, error) {
+	l := len(f.vals)
+
+	sort.Float64s(f.vals)
+
+	if l == 0 {
+		return int64(0), nil
+	} else if l%2 == 0 {
+		return (f.vals[l/2-1] + f.vals[l/2]) / 2, nil
+	} else {
+		return f.vals[l/2], nil
+	}
+}
+
+func (f *medianFunction) Final(ctx *sqlite3.FunctionContext) {}
 
 func escape(s string) template.HTML {
 	return template.HTML(template.HTMLEscapeString(s))
@@ -333,6 +387,16 @@ func logRequests(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 		handler.ServeHTTP(w, r)
+	})
+}
+
+func init() {
+	sqlite3.MustRegisterFunction("median", &sqlite3.FunctionImpl{
+		NArgs:         1,
+		Deterministic: true,
+		MakeAggregate: func(ctx sqlite3.FunctionContext) (sqlite3.AggregateFunction, error) {
+			return &medianFunction{}, nil
+		},
 	})
 }
 

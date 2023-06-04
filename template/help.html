@@ -27,9 +27,32 @@
 
 <p>
   Other sections on this page
-  are <a href="#schema">schema</a>, <a href="#annoyances">annoyances</a>,
+  are <a href="#functions">functions</a>, <a href="#schema">schema</a>,
+  <a href="#annoyances">annoyances</a>,
   <a href="#result-formatting">result formatting</a>, and
   <a href="#latest-data">latest data</a>.
+</p>
+
+<h2 id="functions">Functions <a href="#functions">¶</a></h2>
+
+<p>
+  In addition to the usual set of SQLite functions (see the links in
+  SQLite's
+  <a href="https://www.sqlite.org/lang.html">SQL documentation</a> for
+  more information), there is one custom function
+  available: <code>median</code>.
+</p>
+
+<h3 id="median">Median <a href="#median">¶</a></h3>
+
+<p>
+  SQLite does not come with a median function, so <code>median</code> is
+  provided as
+  an <a href="https://www.sqlite.org/appfunc.html">application-defined
+  function</a>. It is an aggregate function on numeric values (similar
+  to <code>sum</code>). The value will be displayed as described
+  in <a href="#result-formatting">result formatting</a>, but internally
+  is always a float.
 </p>
 
 <h2 id="schema">Schema <a href="#schema">¶</a></h2>

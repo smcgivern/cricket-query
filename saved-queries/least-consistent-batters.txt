@@ -1,0 +1,19 @@
+Least consistent batters
+The average (mean) is one way of summarising a batter's career. Another is the median, which shows the score that they exceed half the time, and fail to reach half the time. If a genuine batter (defined here as averaging at least 25 with at least 1,000 runs) has a low ratio of median to average, then that suggests they were inconsistent and relied on big scores when they did get in. The shorter the format, the less relevant this is, and the higher the ratio will be. Change ASC to DESC in the SQL to see the most consistent batters by this measure.
+
+
+WITH median AS (
+  SELECT
+    player_id,
+    player,
+    median(runs) AS median,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS average,
+    SUM(runs) AS total
+  FROM innings
+  GROUP BY player_id
+)
+SELECT *, median / average AS ratio
+FROM median
+WHERE total >= 1000 AND average >= 25
+ORDER BY median / average ASC
+LIMIT 20;

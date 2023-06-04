@@ -26,12 +26,20 @@ func init() {
 	)
 }
 
+var ignoreDuration = cmpopts.IgnoreFields(Result{}, "Duration")
+
+func makeSingleRow(val any) [][]any {
+	rows := make([][]any, 1)
+	rows[0] = make([]any, 1)
+	rows[0][0] = val
+
+	return rows
+}
+
 func TestMain(m *testing.M) {
 	db = sqlx.MustConnect("sqlite", "testdata/innings.sqlite3")
 	m.Run()
 }
-
-var ignoreDuration = cmpopts.IgnoreFields(Result{}, "Duration")
 
 func TestFormat(t *testing.T) {
 	cases := []struct {
@@ -162,9 +170,6 @@ func TestProjectQuery(t *testing.T) {
 }
 
 func TestRunQuery(t *testing.T) {
-	rows := make([][]interface{}, 1)
-	rows[0] = make([]interface{}, 1)
-	rows[0][0] = int64(0)
 	ctx := context.Background()
 
 	cases := []struct {
@@ -177,7 +182,7 @@ func TestRunQuery(t *testing.T) {
 			1,
 			Result{
 				Columns:  []string{"runs"},
-				Rows:     rows,
+				Rows:     makeSingleRow(int64(0)),
 				Messages: []string{"Too many rows returned; stopping at 1"},
 			},
 		},
@@ -186,7 +191,25 @@ func TestRunQuery(t *testing.T) {
 			2,
 			Result{
 				Columns:  []string{"runs"},
-				Rows:     rows,
+				Rows:     makeSingleRow(int64(0)),
+				Messages: []string{},
+			},
+		},
+		{
+			"SELECT median(mins) FROM women_test_batting_innings;",
+			1,
+			Result{
+				Columns:  []string{"median(mins)"},
+				Rows:     makeSingleRow(int64(0)),
+				Messages: []string{},
+			},
+		},
+		{
+			"SELECT median(runs) FROM (SELECT runs FROM women_test_batting_innings ORDER BY runs DESC LIMIT 2);",
+			1,
+			Result{
+				Columns:  []string{"median(runs)"},
+				Rows:     makeSingleRow(float64(14.5)),
 				Messages: []string{},
 			},
 		},

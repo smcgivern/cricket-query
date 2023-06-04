@@ -248,6 +248,27 @@ WHERE total_runs > 1000
 ORDER BY lowest_cumulative_average DESC
 LIMIT 10;`,
 	},
+	"least-consistent-batters": Query{
+		Subtitle:    "Least consistent batters",
+		Description: "The average (mean) is one way of summarising a batter's career. Another is the median, which shows the score that they exceed half the time, and fail to reach half the time. If a genuine batter (defined here as averaging at least 25 with at least 1,000 runs) has a low ratio of median to average, then that suggests they were inconsistent and relied on big scores when they did get in. The shorter the format, the less relevant this is, and the higher the ratio will be. Change ASC to DESC in the SQL to see the most consistent batters by this measure.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH median AS (
+  SELECT
+    player_id,
+    player,
+    median(runs) AS median,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS average,
+    SUM(runs) AS total
+  FROM innings
+  GROUP BY player_id
+)
+SELECT *, median / average AS ratio
+FROM median
+WHERE total >= 1000 AND average >= 25
+ORDER BY median / average ASC
+LIMIT 20;`,
+	},
 	"lowest-high-score": Query{
 		Subtitle:    "Lowest high score after N innings",
 		Description: "Players with the lowest high score after N innings.",
@@ -274,6 +295,29 @@ INNER JOIN running ON cumulative_high_score = lowest_high_score
   AND running.innings_count = lowest.innings_count
 WHERE lowest.innings_count IN (10, 25, 50, 100, 200, 300)
 ORDER BY lowest.innings_count;`,
+	},
+	"median-higher-than-average": Query{
+		Subtitle:    "Median higher than average",
+		Description: "A player's median innings is the score that they exceed half the time, and fail to reach half the time. Because low scores are so common in cricket, having a median score above the average (mean) score is very rare. This shows the players who made it the most runs into their career with the median above the average",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH running AS (
+  SELECT
+    player_id,
+    player,
+    COUNT(*) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS innings,
+    median(runs) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS median,
+    SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS outs,
+    SUM(runs) OVER (PARTITION BY player_id ORDER BY start_date ASC, innings ASC) AS total
+  FROM innings
+  WHERE runs IS NOT NULL
+  ORDER BY player_id, start_date, innings
+)
+SELECT player_id, player, innings, median, CAST(total AS real) / outs AS average, total
+FROM running
+WHERE median > average
+ORDER BY total DESC
+LIMIT 10;`,
 	},
 	"most-boundary-runs": Query{
 		Subtitle:    "Highest proportion of runs in boundaries",
