@@ -77,8 +77,8 @@ var startsWithWith = regexp.MustCompile(`(?i)\AWITH`)
 
 var matchLink = regexp.MustCompile(`\A[mp]\d+\z`)
 var matchDate = regexp.MustCompile(`\A\d{4}-\d{2}-\d{2}( 00:00:00 \+0000 UTC)?\z`)
-var matchInteger = regexp.MustCompile(`\A\d+\z`)
-var matchFloat = regexp.MustCompile(`\A\d+\.\d+\z`)
+var matchInteger = regexp.MustCompile(`\A-?\d+\z`)
+var matchFloat = regexp.MustCompile(`\A-?\d+\.\d+\z`)
 
 var playerPrefix = "https://www.espncricinfo.com/ci/content/player/"
 var matchPrefix = "https://www.espncricinfo.com/ci/content/match/"
