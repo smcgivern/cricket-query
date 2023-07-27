@@ -189,7 +189,7 @@ consecutive AS (
   FROM wins
 )
 SELECT first, MIN(start_date) AS start, MAX(start_date) AS end, COUNT(*) AS count
- FROM consecutive
+FROM consecutive
 WHERE result = 'won'
 GROUP BY first, seq
 ORDER BY count DESC
@@ -247,6 +247,84 @@ FROM lowest_cumulative_averages
 WHERE total_runs > 1000
 ORDER BY lowest_cumulative_average DESC
 LIMIT 10;`,
+	},
+	"innings-average-difference-biggest": Query{
+		Subtitle:    "Biggest difference in first and second innnings average",
+		Description: "Players with the biggest difference between their first innings batting average and their second innings batting average. Unsurprisingly, most players average more in the first innings. Minimum 1,000 runs.",
+		Formats:     checkboxValues(formatValues, []string{"test"}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH by_innings AS (
+  SELECT
+    player_id,
+    (CASE WHEN innings <= 2 THEN 1 ELSE 2 END) AS player_innings,
+    runs,
+    CASE WHEN not_out = 'True' THEN 0 ELSE 1 END AS out
+  FROM innings
+),
+pivot AS (
+  SELECT
+    player_id,
+    SUM(CASE WHEN player_innings = 1 THEN runs END) AS first_runs,
+    SUM(CASE WHEN player_innings = 1 THEN out END) AS first_outs,
+    SUM(CASE WHEN player_innings = 2 THEN runs END) AS second_runs,
+    SUM(CASE WHEN player_innings = 2 THEN out END) AS second_outs
+  FROM by_innings
+  GROUP BY player_id
+  HAVING first_outs > 0 AND second_outs > 0
+)
+SELECT
+  innings.player_id,
+  player,
+  first_runs,
+  CAST(first_runs AS real) / first_outs AS first_average,
+  second_runs,
+  CAST(second_runs AS real) / second_outs AS second_average,
+  (CAST(first_runs AS real) / first_outs) - (CAST(second_runs AS real) / second_outs) AS difference
+FROM innings
+INNER JOIN pivot ON innings.player_id = pivot.player_id
+WHERE first_runs + second_runs >= 1000
+GROUP BY innings.player_id, player
+ORDER BY ABS(difference) DESC
+LIMIT 20;`,
+	},
+	"innings-average-difference-smallest": Query{
+		Subtitle:    "Smallest difference in first and second innnings average",
+		Description: "Players with the smallest difference between their first innings batting average and their second innings batting average. Minimum 1,000 runs.",
+		Formats:     checkboxValues(formatValues, []string{"test"}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH by_innings AS (
+  SELECT
+    player_id,
+    (CASE WHEN innings <= 2 THEN 1 ELSE 2 END) AS player_innings,
+    runs,
+    CASE WHEN not_out = 'True' THEN 0 ELSE 1 END AS out
+  FROM innings
+),
+pivot AS (
+  SELECT
+    player_id,
+    SUM(CASE WHEN player_innings = 1 THEN runs END) AS first_runs,
+    SUM(CASE WHEN player_innings = 1 THEN out END) AS first_outs,
+    SUM(CASE WHEN player_innings = 2 THEN runs END) AS second_runs,
+    SUM(CASE WHEN player_innings = 2 THEN out END) AS second_outs
+  FROM by_innings
+  GROUP BY player_id
+  HAVING first_outs > 0 AND second_outs > 0
+)
+SELECT
+  innings.player_id,
+  player,
+  first_runs,
+  CAST(first_runs AS real) / first_outs AS first_average,
+  second_runs,
+  CAST(second_runs AS real) / second_outs AS second_average,
+  (CAST(first_runs AS real) / first_outs) - (CAST(second_runs AS real) / second_outs) AS difference
+FROM innings
+INNER JOIN pivot ON innings.player_id = pivot.player_id
+WHERE first_runs + second_runs >= 1000
+GROUP BY innings.player_id, player
+ORDER BY ABS(difference) ASC
+LIMIT 20;`,
 	},
 	"least-consistent-batters": Query{
 		Subtitle:    "Least consistent batters",
@@ -345,6 +423,43 @@ WHERE average > 0
   AND total_runs > 500
 ORDER BY boundary_proportion DESC
 LIMIT 10;`,
+	},
+	"most-innings-outside-most-common-position": Query{
+		Subtitle:    "Most innings outside most common position",
+		Description: "Players with the highest proportion of innings batted outside their most frequent batting position. For this, both opening positions are considered equivalent. Minimum 100 innings.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH min_twenty AS (
+  SELECT player_id FROM innings WHERE runs IS NOT NULL GROUP BY player_id HAVING COUNT(*) >= 100
+),
+by_position AS (
+  SELECT player_id, player, (CASE WHEN pos = 2 THEN 1 ELSE pos END) AS pos, COUNT(*) AS count
+  FROM innings
+  WHERE runs IS NOT NULL AND EXISTS (SELECT * FROM min_twenty WHERE min_twenty.player_id = innings.player_id)
+  GROUP BY player_id, player, (CASE WHEN pos = 2 THEN 1 ELSE pos END)
+),
+ranked AS (
+  SELECT *, ROW_NUMBER() OVER(PARTITION BY player_id, player ORDER BY count DESC) AS rank
+  FROM by_position
+  ORDER BY pos ASC
+),
+aggregates AS (
+  SELECT
+    player_id,
+    player,
+    (SELECT pos FROM ranked r2 WHERE r2.player_id = r.player_id AND rank = 1) AS top,
+    (SELECT count FROM ranked r2 WHERE r2.player_id = r.player_id AND rank = 1) AS top_count,
+    (SELECT group_concat(pos) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other,
+    (SELECT group_concat(count) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other_counts,
+    (SELECT SUM(count) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other_total
+  FROM ranked r
+  GROUP BY player_id, player
+)
+SELECT *, CAST(top_count AS real) / other_total AS ratio
+FROM aggregates
+WHERE other_total IS NOT NULL
+ORDER BY ratio ASC
+LIMIT 20;`,
 	},
 	"t20i-innings-with-max-three-overs": Query{
 		Subtitle:    "T20I innings with no bowlers bowling out",

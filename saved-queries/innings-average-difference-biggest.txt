@@ -1,0 +1,37 @@
+Biggest difference in first and second innnings average
+Players with the biggest difference between their first innings batting average and their second innings batting average. Unsurprisingly, most players average more in the first innings. Minimum 1,000 runs.
+"test"
+
+WITH by_innings AS (
+  SELECT
+    player_id,
+    (CASE WHEN innings <= 2 THEN 1 ELSE 2 END) AS player_innings,
+    runs,
+    CASE WHEN not_out = 'True' THEN 0 ELSE 1 END AS out
+  FROM innings
+),
+pivot AS (
+  SELECT
+    player_id,
+    SUM(CASE WHEN player_innings = 1 THEN runs END) AS first_runs,
+    SUM(CASE WHEN player_innings = 1 THEN out END) AS first_outs,
+    SUM(CASE WHEN player_innings = 2 THEN runs END) AS second_runs,
+    SUM(CASE WHEN player_innings = 2 THEN out END) AS second_outs
+  FROM by_innings
+  GROUP BY player_id
+  HAVING first_outs > 0 AND second_outs > 0
+)
+SELECT
+  innings.player_id,
+  player,
+  first_runs,
+  CAST(first_runs AS real) / first_outs AS first_average,
+  second_runs,
+  CAST(second_runs AS real) / second_outs AS second_average,
+  (CAST(first_runs AS real) / first_outs) - (CAST(second_runs AS real) / second_outs) AS difference
+FROM innings
+INNER JOIN pivot ON innings.player_id = pivot.player_id
+WHERE first_runs + second_runs >= 1000
+GROUP BY innings.player_id, player
+ORDER BY ABS(difference) DESC
+LIMIT 20;

@@ -1,0 +1,35 @@
+Most innings outside most common position
+Players with the highest proportion of innings batted outside their most frequent batting position. For this, both opening positions are considered equivalent. Minimum 100 innings.
+
+
+WITH min_twenty AS (
+  SELECT player_id FROM innings WHERE runs IS NOT NULL GROUP BY player_id HAVING COUNT(*) >= 100
+),
+by_position AS (
+  SELECT player_id, player, (CASE WHEN pos = 2 THEN 1 ELSE pos END) AS pos, COUNT(*) AS count
+  FROM innings
+  WHERE runs IS NOT NULL AND EXISTS (SELECT * FROM min_twenty WHERE min_twenty.player_id = innings.player_id)
+  GROUP BY player_id, player, (CASE WHEN pos = 2 THEN 1 ELSE pos END)
+),
+ranked AS (
+  SELECT *, ROW_NUMBER() OVER(PARTITION BY player_id, player ORDER BY count DESC) AS rank
+  FROM by_position
+  ORDER BY pos ASC
+),
+aggregates AS (
+  SELECT
+    player_id,
+    player,
+    (SELECT pos FROM ranked r2 WHERE r2.player_id = r.player_id AND rank = 1) AS top,
+    (SELECT count FROM ranked r2 WHERE r2.player_id = r.player_id AND rank = 1) AS top_count,
+    (SELECT group_concat(pos) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other,
+    (SELECT group_concat(count) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other_counts,
+    (SELECT SUM(count) FROM ranked r2 WHERE r2.player_id = r.player_id AND rank != 1) AS other_total
+  FROM ranked r
+  GROUP BY player_id, player
+)
+SELECT *, CAST(top_count AS real) / other_total AS ratio
+FROM aggregates
+WHERE other_total IS NOT NULL
+ORDER BY ratio ASC
+LIMIT 20;

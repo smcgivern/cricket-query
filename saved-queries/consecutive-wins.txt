@@ -25,7 +25,7 @@ consecutive AS (
   FROM wins
 )
 SELECT first, MIN(start_date) AS start, MAX(start_date) AS end, COUNT(*) AS count
- FROM consecutive
+FROM consecutive
 WHERE result = 'won'
 GROUP BY first, seq
 ORDER BY count DESC
