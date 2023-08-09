@@ -1,0 +1,42 @@
+Biggest difference in home and away batting average
+Players with the biggest difference between their home batting average and their away batting average. Unsurprisingly, most players average more at home. Minimum 1,000 runs.
+
+
+WITH ground_counts AS (
+  SELECT ground, team, COUNT(*) AS count FROM team_innings GROUP BY ground, team
+),
+ground_ranks AS (
+  SELECT ground, team, row_number() OVER (PARTITION BY ground ORDER BY count DESC) AS rank FROM ground_counts
+),
+home_grounds AS (
+  SELECT * FROM ground_ranks WHERE rank = 1
+),
+innings_with_home AS (
+  SELECT *, home_grounds.team AS home_team, CASE WHEN not_out = 'True' THEN 0 ELSE 1 END AS out
+  FROM innings
+  INNER JOIN home_grounds ON home_grounds.ground = innings.ground
+  WHERE runs IS NOT NULL
+),
+pivot AS (
+  SELECT
+    player_id,
+    player,
+    SUM(CASE WHEN home_team = team THEN runs END) AS home_runs,
+    SUM(CASE WHEN home_team = team THEN out END) AS home_outs,
+    SUM(CASE WHEN home_team != team THEN runs END) AS away_runs,
+    SUM(CASE WHEN home_team != team THEN out END) AS away_outs
+  FROM innings_with_home
+  GROUP BY player_id, player
+  HAVING home_outs > 0 AND away_outs > 0 AND (home_runs + away_runs >= 1000)
+)
+SELECT
+  player_id,
+  player,
+  home_runs,
+  CAST(home_runs AS real) / home_outs AS home_average,
+  away_runs,
+  CAST(away_runs AS real) / away_outs AS away_average,
+  (CAST(home_runs AS real) / home_outs) - (CAST(away_runs AS real) / away_outs) AS difference
+FROM pivot
+ORDER BY ABS(difference) DESC
+LIMIT 20;

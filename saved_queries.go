@@ -248,6 +248,94 @@ WHERE total_runs > 1000
 ORDER BY lowest_cumulative_average DESC
 LIMIT 10;`,
 	},
+	"home-average-difference-batting": Query{
+		Subtitle:    "Biggest difference in home and away batting average",
+		Description: "Players with the biggest difference between their home batting average and their away batting average. Unsurprisingly, most players average more at home. Minimum 1,000 runs.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH ground_counts AS (
+  SELECT ground, team, COUNT(*) AS count FROM team_innings GROUP BY ground, team
+),
+ground_ranks AS (
+  SELECT ground, team, row_number() OVER (PARTITION BY ground ORDER BY count DESC) AS rank FROM ground_counts
+),
+home_grounds AS (
+  SELECT * FROM ground_ranks WHERE rank = 1
+),
+innings_with_home AS (
+  SELECT *, home_grounds.team AS home_team, CASE WHEN not_out = 'True' THEN 0 ELSE 1 END AS out
+  FROM innings
+  INNER JOIN home_grounds ON home_grounds.ground = innings.ground
+  WHERE runs IS NOT NULL
+),
+pivot AS (
+  SELECT
+    player_id,
+    player,
+    SUM(CASE WHEN home_team = team THEN runs END) AS home_runs,
+    SUM(CASE WHEN home_team = team THEN out END) AS home_outs,
+    SUM(CASE WHEN home_team != team THEN runs END) AS away_runs,
+    SUM(CASE WHEN home_team != team THEN out END) AS away_outs
+  FROM innings_with_home
+  GROUP BY player_id, player
+  HAVING home_outs > 0 AND away_outs > 0 AND (home_runs + away_runs >= 1000)
+)
+SELECT
+  player_id,
+  player,
+  home_runs,
+  CAST(home_runs AS real) / home_outs AS home_average,
+  away_runs,
+  CAST(away_runs AS real) / away_outs AS away_average,
+  (CAST(home_runs AS real) / home_outs) - (CAST(away_runs AS real) / away_outs) AS difference
+FROM pivot
+ORDER BY ABS(difference) DESC
+LIMIT 20;`,
+	},
+	"home-average-difference-bowling": Query{
+		Subtitle:    "Biggest difference in home and away bowling average",
+		Description: "Players with the biggest difference between their home bowling average and their bowling batting average. Unsurprisingly, most players average less at home. Minimum 50 wickets and 10 away innings bowled.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH ground_counts AS (
+  SELECT ground, team, COUNT(*) AS count FROM team_innings GROUP BY ground, team
+),
+ground_ranks AS (
+  SELECT ground, team, row_number() OVER (PARTITION BY ground ORDER BY count DESC) AS rank FROM ground_counts
+),
+home_grounds AS (
+  SELECT * FROM ground_ranks WHERE rank = 1
+),
+innings_with_home AS (
+  SELECT *, home_grounds.team AS home_team
+  FROM bowling_innings
+  INNER JOIN home_grounds ON home_grounds.ground = bowling_innings.ground
+  WHERE runs IS NOT NULL
+),
+pivot AS (
+  SELECT
+    player_id,
+    player,
+    SUM(CASE WHEN home_team = team THEN runs END) AS home_runs,
+    SUM(CASE WHEN home_team = team THEN wickets END) AS home_wickets,
+    SUM(CASE WHEN home_team != team THEN runs END) AS away_runs,
+    SUM(CASE WHEN home_team != team THEN wickets END) AS away_wickets
+  FROM innings_with_home
+  GROUP BY player_id, player
+  HAVING home_wickets > 0 AND away_wickets > 0 AND (SUM(CASE WHEN home_team != team THEN 1 ELSE 0 END) >= 10) AND (home_wickets + away_wickets) >= 50
+)
+SELECT
+  player_id,
+  player,
+  home_wickets,
+  CAST(home_runs AS real) / home_wickets AS home_average,
+  away_wickets,
+  CAST(away_runs AS real) / away_wickets AS away_average,
+  (CAST(home_runs AS real) / home_wickets) - (CAST(away_runs AS real) / away_wickets) AS difference
+FROM pivot
+ORDER BY ABS(difference) DESC
+LIMIT 20;`,
+	},
 	"innings-average-difference-biggest": Query{
 		Subtitle:    "Biggest difference in first and second innnings average",
 		Description: "Players with the biggest difference between their first innings batting average and their second innings batting average. Unsurprisingly, most players average more in the first innings. Minimum 1,000 runs.",
@@ -325,6 +413,30 @@ WHERE first_runs + second_runs >= 1000
 GROUP BY innings.player_id, player
 ORDER BY ABS(difference) ASC
 LIMIT 20;`,
+	},
+	"integer-average-before-last-match": Query{
+		Subtitle:    "Integer average before last match",
+		Description: "Men who had a batting average that was an integer before they played their last Test.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH ranked AS (
+  SELECT *, RANK() OVER (PARTITION BY player_id ORDER BY start_date DESC) AS rank FROM innings
+),
+excluding_last AS (
+  SELECT
+    player_id,
+    player,
+    SUM(runs) AS total,
+    SUM(CASE WHEN runs IS NOT NULL THEN 1 ELSE 0 END) AS innings,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'False' THEN 1 ELSE 0 END) AS average
+  FROM ranked
+  WHERE rank != 1
+  GROUP BY player_id, player
+)
+SELECT *
+FROM excluding_last
+WHERE average = CAST(average AS integer) AND (average % 10 = 0 OR average < 10)
+ORDER BY innings DESC;`,
 	},
 	"least-consistent-batters": Query{
 		Subtitle:    "Least consistent batters",

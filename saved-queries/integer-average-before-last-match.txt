@@ -1,0 +1,22 @@
+Integer average before last match
+Men who had a batting average that was an integer before they played their last Test.
+
+
+WITH ranked AS (
+  SELECT *, RANK() OVER (PARTITION BY player_id ORDER BY start_date DESC) AS rank FROM innings
+),
+excluding_last AS (
+  SELECT
+    player_id,
+    player,
+    SUM(runs) AS total,
+    SUM(CASE WHEN runs IS NOT NULL THEN 1 ELSE 0 END) AS innings,
+    CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'False' THEN 1 ELSE 0 END) AS average
+  FROM ranked
+  WHERE rank != 1
+  GROUP BY player_id, player
+)
+SELECT *
+FROM excluding_last
+WHERE average = CAST(average AS integer) AND (average % 10 = 0 OR average < 10)
+ORDER BY innings DESC;
