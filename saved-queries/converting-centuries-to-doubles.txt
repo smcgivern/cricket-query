@@ -1,0 +1,14 @@
+Converting centuries to double centuries
+Which players converted the highest ratio of their Test centuries to double centuries.
+"test"
+
+WITH counts AS (
+  SELECT player_id, player, SUM(CASE WHEN runs >= 100 THEN 1 ELSE 0 END) AS centuries, SUM(CASE WHEN runs >= 200 THEN 1 ELSE 0 END) AS double_centuries
+  FROM innings
+  GROUP BY 1, 2
+)
+SELECT *, CAST(double_centuries AS real) / centuries AS ratio
+FROM counts
+WHERE double_centuries >= 1
+ORDER BY ratio DESC
+LIMIT 50;

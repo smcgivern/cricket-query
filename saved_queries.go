@@ -195,6 +195,22 @@ GROUP BY first, seq
 ORDER BY count DESC
 LIMIT 20;`,
 	},
+	"converting-centuries-to-doubles": Query{
+		Subtitle:    "Converting centuries to double centuries",
+		Description: "Which players converted the highest ratio of their Test centuries to double centuries.",
+		Formats:     checkboxValues(formatValues, []string{"test"}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH counts AS (
+  SELECT player_id, player, SUM(CASE WHEN runs >= 100 THEN 1 ELSE 0 END) AS centuries, SUM(CASE WHEN runs >= 200 THEN 1 ELSE 0 END) AS double_centuries
+  FROM innings
+  GROUP BY 1, 2
+)
+SELECT *, CAST(double_centuries AS real) / centuries AS ratio
+FROM counts
+WHERE double_centuries >= 1
+ORDER BY ratio DESC
+LIMIT 50;`,
+	},
 	"fewer-runs-than-innings": Query{
 		Subtitle:    "Fewer runs than innings",
 		Description: "Players who made it the most innings into their career with fewer than one run per innings.",
@@ -458,6 +474,24 @@ FROM median
 WHERE total >= 1000 AND average >= 25
 ORDER BY median / average ASC
 LIMIT 20;`,
+	},
+	"lowest-batting-average-with-two-double-centuries": Query{
+		Subtitle:    "Lowest batting average with two double centuries",
+		Description: "All players with two double centuries, in reverse order of batting average.",
+		Formats:     checkboxValues(formatValues, []string{"test"}),
+		Genders:     checkboxValues(genderValues, []string{"men"}),
+		SQL: `WITH two_doubles AS (
+  SELECT player_id
+  FROM innings
+  WHERE runs >= 200
+  GROUP BY 1
+  HAVING COUNT(*) >= 2
+)
+SELECT player_id, player, SUM(runs) AS runs, CAST(SUM(runs) AS real) / SUM(CASE WHEN not_out = 'True' THEN 0 ELSE 1 END) AS average
+FROM innings
+WHERE player_id IN (SELECT player_id FROM two_doubles) AND runs IS NOT NULL
+GROUP BY 1, 2
+ORDER BY average ASC;`,
 	},
 	"lowest-high-score": Query{
 		Subtitle:    "Lowest high score after N innings",
