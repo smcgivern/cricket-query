@@ -222,7 +222,7 @@ running AS (
     player_id,
     player,
     SUM(runs) OVER (PARTITION BY player_id ORDER BY start_date, innings) AS cumulative_runs,
-    COUNT(*) OVER (PARTITION BY player_id ORDER BY start_date, innings) - 1 AS innings_count
+    COUNT(*) OVER (PARTITION BY player_id ORDER BY start_date, innings) AS innings_count
   FROM innings
   WHERE runs IS NOT NULL
   ORDER BY player_id, start_date, innings
