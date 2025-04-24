@@ -264,6 +264,22 @@ WHERE total_runs > 1000
 ORDER BY lowest_cumulative_average DESC
 LIMIT 10;`,
 	},
+	"highest-scores-made-n-times": Query{
+		Subtitle:    "Highest scores made N times",
+		Description: "The highest score made N (up to 10) times by a single player. Not out scores count here.",
+		Formats:     checkboxValues(formatValues, []string{}),
+		Genders:     checkboxValues(genderValues, []string{}),
+		SQL: `WITH by_count AS (
+  SELECT COUNT(*) AS count, runs, player, player_id FROM innings WHERE runs IS NOT NULL GROUP BY runs, player, player_id
+),
+ranked AS (
+  SELECT *, row_number() OVER (PARTITION BY count ORDER BY runs DESC) AS rank FROM by_count
+)
+SELECT count, runs, player, player_id
+FROM ranked
+WHERE rank = 1 AND count <= 10
+ORDER BY count ASC;`,
+	},
 	"home-average-difference-batting": Query{
 		Subtitle:    "Biggest difference in home and away batting average",
 		Description: "Players with the biggest difference between their home batting average and their away batting average. Unsurprisingly, most players average more at home. Minimum 1,000 runs.",
